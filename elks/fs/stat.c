@@ -17,21 +17,21 @@
 
 static int cp_stat(register struct inode *inode, struct stat *statbuf)
 {
-    static struct stat tmp;		/* static not reentrant: conserve stack usage*/
+	static struct stat tmp; /* static not reentrant: conserve stack usage*/
 
-    memset(&tmp, 0, sizeof(tmp));
+	memset(&tmp, 0, sizeof(tmp));
 
-    tmp.st_dev		= kdev_t_to_nr(inode->i_dev);
-    tmp.st_ino		= inode->i_ino;
-    tmp.st_mode 	= inode->i_mode;
-    tmp.st_nlink	= inode->i_nlink;
-    tmp.st_uid		= inode->i_uid;
-    tmp.st_gid		= inode->i_gid;
-    tmp.st_size 	= (off_t) inode->i_size;
-    tmp.st_rdev 	= kdev_t_to_nr(inode->i_rdev);
-    tmp.st_mtime	= inode->i_mtime;
-    tmp.st_atime	= inode->i_atime;
-    tmp.st_ctime	= inode->i_ctime;
+	tmp.st_dev = kdev_t_to_nr(inode->i_dev);
+	tmp.st_ino = inode->i_ino;
+	tmp.st_mode = inode->i_mode;
+	tmp.st_nlink = inode->i_nlink;
+	tmp.st_uid = inode->i_uid;
+	tmp.st_gid = inode->i_gid;
+	tmp.st_size = (off_t)inode->i_size;
+	tmp.st_rdev = kdev_t_to_nr(inode->i_rdev);
+	tmp.st_mtime = inode->i_mtime;
+	tmp.st_atime = inode->i_atime;
+	tmp.st_ctime = inode->i_ctime;
 
 #if UNUSED
 /*
@@ -51,84 +51,82 @@ static int cp_stat(register struct inode *inode, struct stat *statbuf)
  * are stored in local variables and nothing is done with them.
  * Al
  */
-#define D_B   7
-#define I_B   (BLOCK_SIZE / sizeof(unsigned short))
+#define D_B 7
+#define I_B (BLOCK_SIZE / sizeof(unsigned short))
 
-    if (!inode->i_blksize) {
-	unsigned int blocks, indirect;
+	if (!inode->i_blksize) {
+		unsigned int blocks, indirect;
 
-	blocks = (tmp.st_size + BLOCK_SIZE - 1) >> BLOCK_SIZE_BITS;
-	if (blocks > D_B) {
-	    indirect = (blocks - D_B + I_B - 1) / I_B;
-	    blocks += indirect;
-	    if (indirect > 1) {
-		indirect = (indirect - 1 + I_B - 1) / I_B;
-		blocks += indirect;
-		if (indirect > 1)
-		    blocks++;
-	    }
+		blocks = (tmp.st_size + BLOCK_SIZE - 1) >> BLOCK_SIZE_BITS;
+		if (blocks > D_B) {
+			indirect = (blocks - D_B + I_B - 1) / I_B;
+			blocks += indirect;
+			if (indirect > 1) {
+				indirect = (indirect - 1 + I_B - 1) / I_B;
+				blocks += indirect;
+				if (indirect > 1)
+					blocks++;
+			}
+		}
 	}
-    }
 #endif
 
-    return verified_memcpy_tofs((char *) statbuf, (char *) &tmp, sizeof(tmp));
+	return verified_memcpy_tofs((char *)statbuf, (char *)&tmp, sizeof(tmp));
 }
 
 int sys_stat(char *filename, struct stat *statbuf)
 {
-    struct inode *inode;
-    int error = namei(filename, &inode, 0, 0);
+	struct inode *inode;
+	int error = namei(filename, &inode, 0, 0);
 
-    if (!error) {
-	error = cp_stat(inode, statbuf);
-	iput(inode);
-    }
+	if (!error) {
+		error = cp_stat(inode, statbuf);
+		iput(inode);
+	}
 
-    return error;
+	return error;
 }
 
 int sys_lstat(char *filename, struct stat *statbuf)
 {
-    struct inode *inode;
-    int error = lnamei(filename, &inode);
+	struct inode *inode;
+	int error = lnamei(filename, &inode);
 
-    if (!error) {
-	error = cp_stat(inode, statbuf);
-	iput(inode);
-    }
+	if (!error) {
+		error = cp_stat(inode, statbuf);
+		iput(inode);
+	}
 
-    return error;
+	return error;
 }
 
 int sys_fstat(unsigned int fd, register struct stat *statbuf)
 {
-    struct file *f;
-    int ret;
+	struct file *f;
+	int ret;
 
-    ret = fd_check(fd, (char *) statbuf, sizeof(struct stat),
-				FMODE_WRITE | FMODE_READ, &f);
-    if (!ret)
-	cp_stat(f->f_inode, statbuf);
-    return ret;
+	ret = fd_check(fd, (char *)statbuf, sizeof(struct stat),
+		       FMODE_WRITE | FMODE_READ, &f);
+	if (!ret)
+		cp_stat(f->f_inode, statbuf);
+	return ret;
 }
 
 int sys_readlink(char *path, char *buf, size_t bufsiz)
 {
-    struct inode *inode;
-    register struct inode *pinode;
-    register struct inode_operations *iop;
-    int error = -EINVAL;
+	struct inode *inode;
+	register struct inode *pinode;
+	register struct inode_operations *iop;
+	int error = -EINVAL;
 
-    if ((bufsiz > 0)
-	&& !(error = verify_area(VERIFY_WRITE, buf, bufsiz))
-	&& !(error = lnamei(path, &inode))
-	) {
-	pinode = inode;
-	iop = pinode->i_op;
-	error = (!iop || !iop->readlink)
-	    ? (iput(pinode), -EINVAL)
-	    : iop->readlink(pinode, buf, bufsiz);
-    }
+	if ((bufsiz > 0) && !(error = verify_area(VERIFY_WRITE, buf, bufsiz)) &&
+	    !(error = lnamei(path, &inode))) {
+		pinode = inode;
+		iop = pinode->i_op;
+		error = (!iop || !iop->readlink) ?
+				      (iput(pinode), -EINVAL) :
+				      iop->readlink(pinode, buf, bufsiz);
+	}
 
-    return error;
+	return error;
 }

@@ -41,172 +41,152 @@ static unsigned char bit_buffer;
 static const char *inp;
 static seg_t segp = 0;
 
-#define read_byte()	peekb((word_t)--inp, segp)
+#define read_byte() peekb((word_t)--inp, segp)
 
 static int bitbuffer_rotate(int carry)
 {
-    int carry_out;
-    /* rol */
-    carry_out = (bit_buffer & 0x80) != 0;
-    bit_buffer <<= 1;
-    if (carry)
-    {
-        bit_buffer |= 0x01;
-    }
-    return carry_out;
+	int carry_out;
+	/* rol */
+	carry_out = (bit_buffer & 0x80) != 0;
+	bit_buffer <<= 1;
+	if (carry) {
+		bit_buffer |= 0x01;
+	}
+	return carry_out;
 }
 
-static unsigned short int
-read_bits(int bit_count)
+static unsigned short int read_bits(int bit_count)
 {
-    unsigned short int ubits = 0;
-    int byte_copy = bit_count & 8;
-    bit_count &= 7;
+	unsigned short int ubits = 0;
+	int byte_copy = bit_count & 8;
+	bit_count &= 7;
 
-    while(bit_count-- > 0)
-    {
-        int carry = bitbuffer_rotate(0);
-        if (bit_buffer == 0)
-        {
-            bit_buffer = read_byte();
-            carry = bitbuffer_rotate(1);
-        }
-        ubits <<= 1;
-        ubits |= carry;
-    }
-    if (byte_copy != 0)
-    {
-        ubits <<= 8;
-        ubits |= read_byte();
-    }
-    return ubits;
+	while (bit_count-- > 0) {
+		int carry = bitbuffer_rotate(0);
+		if (bit_buffer == 0) {
+			bit_buffer = read_byte();
+			carry = bitbuffer_rotate(1);
+		}
+		ubits <<= 1;
+		ubits |= carry;
+	}
+	if (byte_copy != 0) {
+		ubits <<= 8;
+		ubits |= read_byte();
+	}
+	return ubits;
 }
 
-static void
-init_table(void)
+static void init_table(void)
 {
-    int i;
-    unsigned short int b2 = 0;
+	int i;
+	unsigned short int b2 = 0;
 
-    for(i = 0; i < 52; ++i)
-    {
-        unsigned short int b1;
-        if((i & 15) == 0)
-        {
-            b2 = 1;
-        }
-        base[i] = b2;
+	for (i = 0; i < 52; ++i) {
+		unsigned short int b1;
+		if ((i & 15) == 0) {
+			b2 = 1;
+		}
+		base[i] = b2;
 
-        b1 = read_bits(3);
-        b1 |= read_bits(1) << 3;
-        bits[i] = b1;
+		b1 = read_bits(3);
+		b1 |= read_bits(1) << 3;
+		bits[i] = b1;
 
-        b2 += 1 << b1;
-    }
+		b2 += 1 << b1;
+	}
 }
 
-static char *
-exo_decrunch(const char *in, char *out)
+static char *exo_decrunch(const char *in, char *out)
 {
-    unsigned short int index;
-    unsigned short int length;
-    unsigned short int offset;
-    char c;
-    char literal = 1;
-    char reuse_offset_state = 1;
+	unsigned short int index;
+	unsigned short int length;
+	unsigned short int offset;
+	char c;
+	char literal = 1;
+	char reuse_offset_state = 1;
 
-    inp = in;
-    bit_buffer = read_byte();
+	inp = in;
+	bit_buffer = read_byte();
 
-    init_table();
+	init_table();
 
-    goto implicit_literal_byte;
-    for(;;)
-    {
-        literal = read_bits(1);
-        if(literal == 1)
-        {
-        implicit_literal_byte:
-            /* literal byte */
-            length = 1;
-            goto copy;
-        }
-        index = 0;
-        while(read_bits(1) == 0)
-        {
-            ++index;
-        }
-        if(index == 16)
-        {
-            break;
-        }
-        if(index == 17)
-        {
-            literal = 1;
-            length = read_byte() << 8;
-            length |= read_byte();
-            goto copy;
-        }
-        length = base[index];
-        length += read_bits(bits[index]);
+	goto implicit_literal_byte;
+	for (;;) {
+		literal = read_bits(1);
+		if (literal == 1) {
+implicit_literal_byte:
+			/* literal byte */
+			length = 1;
+			goto copy;
+		}
+		index = 0;
+		while (read_bits(1) == 0) {
+			++index;
+		}
+		if (index == 16) {
+			break;
+		}
+		if (index == 17) {
+			literal = 1;
+			length = read_byte() << 8;
+			length |= read_byte();
+			goto copy;
+		}
+		length = base[index];
+		length += read_bits(bits[index]);
 
-        if ((reuse_offset_state & 3) != 1 || !read_bits(1))
-        {
-            switch(length)
-            {
-            case 1:
-                index = read_bits(2);
-                index += 48;
-                break;
-            case 2:
-                index = read_bits(4);
-                index += 32;
-                break;
-            default:
-                index = read_bits(4);
-                index += 16;
-                break;
-            }
-            offset = base[index];
-            offset += read_bits(bits[index]);
-        }
-    copy:
-        do
-        {
-            --out;
-            if(literal)
-            {
-                c = read_byte();
-            }
-            else
-            {
-                c = peekb((word_t)out+offset, segp); /* c = out[offset]; */
-            }
-			pokeb((word_t)out, segp, c);			/* *out = c; */
-			if ((int)(out - inp) < 0)
-			{
-				debug("EXEC: decompress output overflow by %d\n", (int)(out - inp));
+		if ((reuse_offset_state & 3) != 1 || !read_bits(1)) {
+			switch (length) {
+			case 1:
+				index = read_bits(2);
+				index += 48;
+				break;
+			case 2:
+				index = read_bits(4);
+				index += 32;
+				break;
+			default:
+				index = read_bits(4);
+				index += 16;
+				break;
+			}
+			offset = base[index];
+			offset += read_bits(bits[index]);
+		}
+copy:
+		do {
+			--out;
+			if (literal) {
+				c = read_byte();
+			} else {
+				c = peekb((word_t)out + offset,
+					  segp); /* c = out[offset]; */
+			}
+			pokeb((word_t)out, segp, c); /* *out = c; */
+			if ((int)(out - inp) < 0) {
+				debug("EXEC: decompress output overflow by %d\n",
+				      (int)(out - inp));
 				return 0;
 			}
-        }
-        while(--length > 0);
+		} while (--length > 0);
 
-        reuse_offset_state = (reuse_offset_state << 1) | literal;
-    }
-    return out;
+		reuse_offset_state = (reuse_offset_state << 1) | literal;
+	}
+	return out;
 }
 
-size_t decompress(char *buf, seg_t seg, size_t orig_size, size_t compr_size, int safety)
+size_t decompress(char *buf, seg_t seg, size_t orig_size, size_t compr_size,
+		  int safety)
 {
 	char *in = buf + compr_size;
 	char *out = buf + orig_size + safety;
 
-	debug("decompress: seg %x orig %u compr %u safety %d\n",
-		seg, orig_size, compr_size, safety);
+	debug("decompress: seg %x orig %u compr %u safety %d\n", seg, orig_size,
+	      compr_size, safety);
 	segp = seg;
 	out = exo_decrunch(in, out);
-	if (out - buf != safety)
-	{
+	if (out - buf != safety) {
 		debug("EXEC: decompress error\n");
 		return 0;
 	}

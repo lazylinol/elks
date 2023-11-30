@@ -20,9 +20,9 @@
 #include <arch/io.h>
 
 struct lp_info {
-    char *io;
-    char irq;
-    char flags;
+	char *io;
+	char irq;
+	char flags;
 };
 
 #ifdef BIOS_PORTS
@@ -33,20 +33,14 @@ static struct lp_info ports[LP_PORTS];
 #else
 
 /* extended to support some unusual ports; not used if BIOS_PORTS works */
-static struct lp_info ports[] = {
-    0x3BC, 0, 0,
-    0x378, 0, 0,
-    0x278, 0, 0,
-    0x260, 0, 0,
-    0x2E0, 0, 0,
-    0x2E8, 0, 0,
-    0x2F0, 0, 0,
-    0x2F8, 0, 0,
-    0x3E0, 0, 0,
-    0x3E8, 0, 0
-};
+static struct lp_info ports[] = { 0x3BC, 0, 0, 0x378, 0, 0, 0x278, 0, 0,
+				  0x260, 0, 0, 0x2E0, 0, 0, 0x2E8, 0, 0,
+				  0x2F0, 0, 0, 0x2F8, 0, 0, 0x3E0, 0, 0,
+				  0x3E8, 0, 0 };
 
-static int port_order[LP_PORTS] = { 0, };
+static int port_order[LP_PORTS] = {
+	0,
+};
 
 #endif
 //static int access_count[LP_PORTS] = {0,};
@@ -58,195 +52,196 @@ static int port_order[LP_PORTS] = { 0, };
 #ifdef USE_LP_RESET
 static int lp_reset(int target)
 {
-    register struct lp_info *lpp;
-    int tmp;
+	register struct lp_info *lpp;
+	int tmp;
 
 #ifdef BIOS_PORTS
-    lpp = &ports[target];
+	lpp = &ports[target];
 #else
-    lpp = &ports[port_order[target]];
+	lpp = &ports[port_order[target]];
 #endif
 
-    LP_CONTROL(LP_SELECT, lpp);
-    tmp = LP_RESET_WAIT;
-    do {
-    } while (--tmp);
-    LP_CONTROL(LP_SELECT | LP_INIT, lpp);
+	LP_CONTROL(LP_SELECT, lpp);
+	tmp = LP_RESET_WAIT;
+	do {
+	} while (--tmp);
+	LP_CONTROL(LP_SELECT | LP_INIT, lpp);
 
-    return LP_STATUS(lpp);
+	return LP_STATUS(lpp);
 }
 #endif
 
 static int lp_char_polled(int c, unsigned int target)
 {
-    int wait;
-    register struct lp_info *lpp;
+	int wait;
+	register struct lp_info *lpp;
 
 #ifdef BIOS_PORTS
-    lpp = &ports[target];
+	lpp = &ports[target];
 #else
-    lpp = &ports[port_order[target]];
+	lpp = &ports[port_order[target]];
 #endif
 
-    {
-	int status;
+	{
+		int status;
 
-	/* safety checks */
-	status = LP_STATUS(lpp);
+		/* safety checks */
+		status = LP_STATUS(lpp);
 
-	/* safety checks, note that LP_ERROR and LP_SELECTED
+		/* safety checks, note that LP_ERROR and LP_SELECTED
 	 * are inverted signals */
 
-	if (status & LP_OUTOFPAPER) { /* printer out of paper */
-	    printk("lp%d: out of paper\n", target);
-	    return 0;
-	}
+		if (status & LP_OUTOFPAPER) { /* printer out of paper */
+			printk("lp%d: out of paper\n", target);
+			return 0;
+		}
 
 #if UNUSED
 
-	if (!(status & LP_SELECTED)) { /* printer offline */
-	    printk("lp%d: printer offline\n", target);
-	    return 0;
-	}
+		if (!(status & LP_SELECTED)) { /* printer offline */
+			printk("lp%d: printer offline\n", target);
+			return 0;
+		}
 
 #else
 
-	wait = LP_CHAR_WAIT + 1;
+		wait = LP_CHAR_WAIT + 1;
 
-	while (!((status = LP_STATUS(lpp)) & LP_SELECTED))
-	    /* while not ready do busy loop */
-	    {
-		if (!--wait) {
-		    printk("lp%d: timed out\n", target);
-		    return 0;
-		}
+		while (!((status = LP_STATUS(lpp)) & LP_SELECTED))
+		/* while not ready do busy loop */
+		{
+			if (!--wait) {
+				printk("lp%d: timed out\n", target);
+				return 0;
+			}
 
 #if NEED_RESCHED
-		if (need_resched)
-		    schedule();
+			if (need_resched)
+				schedule();
+#endif
+		}
 #endif
 
-	    }
-#endif
-
-	if (!(status & LP_ERROR)) { /* printer error */
-	    printk("lp%d: printer error\n", target);
-	    return 0;
+		if (!(status & LP_ERROR)) { /* printer error */
+			printk("lp%d: printer error\n", target);
+			return 0;
+		}
 	}
-    }
 
-    /* send character to port */
-    outb_p((unsigned char) c, lpp->io);
+	/* send character to port */
+	outb_p((unsigned char)c, lpp->io);
 
-    {
-	wait = 0;
-	/* 5 us delay */
-	while (wait++ != LP_STROBE_WAIT)
-	    /* Do nothing */ ;
+	{
+		wait = 0;
+		/* 5 us delay */
+		while (wait++ != LP_STROBE_WAIT)
+			/* Do nothing */;
 
-	/* strobe high */
-	LP_CONTROL(LP_SELECT | LP_INIT | LP_STROBE, lpp);
+		/* strobe high */
+		LP_CONTROL(LP_SELECT | LP_INIT | LP_STROBE, lpp);
 
-	/* strobe low */
-	LP_CONTROL(LP_SELECT | LP_INIT, lpp);
+		/* strobe low */
+		LP_CONTROL(LP_SELECT | LP_INIT, lpp);
 
-	/* 5 us delay */
-	while (wait--)
-	    /* Do nothing */ ;
-    }
+		/* 5 us delay */
+		while (wait--)
+			/* Do nothing */;
+	}
 
-    return 1;
+	return 1;
 }
 
-static size_t lp_write(struct inode *inode, struct file *file, char *buf, size_t count)
+static size_t lp_write(struct inode *inode, struct file *file, char *buf,
+		       size_t count)
 {
-    size_t chrsp = 0;
+	size_t chrsp = 0;
 
 #ifdef USE_LP_RESET
 
-    /* initialize printer */
-    lp_reset(MINOR(inode->i_rdev));
+	/* initialize printer */
+	lp_reset(MINOR(inode->i_rdev));
 
 #endif
 
-    while (chrsp < count) {
-	if (!lp_char_polled(get_user_char((void *)(buf++)), MINOR(inode->i_rdev)))
-	    break;
-	chrsp++;
-    }
-    return chrsp;
+	while (chrsp < count) {
+		if (!lp_char_polled(get_user_char((void *)(buf++)),
+				    MINOR(inode->i_rdev)))
+			break;
+		chrsp++;
+	}
+	return chrsp;
 }
 
 static int lp_open(struct inode *inode, struct file *file)
 {
-    register struct lp_info *lpp;
-    short status;
-    unsigned short int target;
+	register struct lp_info *lpp;
+	short status;
+	unsigned short int target;
 
-    target = MINOR(inode->i_rdev);
+	target = MINOR(inode->i_rdev);
 
 #ifdef BIOS_PORTS
-    lpp = &ports[target];
+	lpp = &ports[target];
 #else
-    lpp = &ports[port_order[target]];
+	lpp = &ports[port_order[target]];
 #endif
 
-    status = lpp->flags;
+	status = lpp->flags;
 
-    if (!(status & LP_EXIST)) { /* if LP_EXIST flag not set */
-	debug("lp: device lp%d doesn't exist\n", target);
-	return -ENODEV;
-    }
+	if (!(status & LP_EXIST)) { /* if LP_EXIST flag not set */
+		debug("lp: device lp%d doesn't exist\n", target);
+		return -ENODEV;
+	}
 
-    if (status & LP_BUSY) { /* if LP_BUSY flag set */
-	debug("lp: device lp%d busy\n", target);
-	return -EBUSY;
-    }
+	if (status & LP_BUSY) { /* if LP_BUSY flag set */
+		debug("lp: device lp%d busy\n", target);
+		return -EBUSY;
+	}
 
-/*
+	/*
  * nonexistent port can't be busy
  */
-    lpp->flags = LP_EXIST | LP_BUSY;
+	lpp->flags = LP_EXIST | LP_BUSY;
 
-    //access_count[target]++;
+	//access_count[target]++;
 
-    return 0;
+	return 0;
 }
 
 static void lp_release(struct inode *inode, struct file *file)
 {
-    unsigned short int target = MINOR(inode->i_rdev);
+	unsigned short int target = MINOR(inode->i_rdev);
 
 #ifdef BIOS_PORTS
-    ports[target].flags = LP_EXIST;	/* not busy */
+	ports[target].flags = LP_EXIST; /* not busy */
 #else
-    ports[port_order[target]].flags = LP_EXIST;	/* not busy */
+	ports[port_order[target]].flags = LP_EXIST; /* not busy */
 #endif
 
-    //access_count[target]--;
+	//access_count[target]--;
 
-    return;
+	return;
 }
 
 #ifndef BIOS_PORTS
 
 static int lp_probe(register struct lp_info *lp)
 {
-    int wait = 0;
+	int wait = 0;
 
-    /* send 0 to port */
-    outb_p((unsigned char) (LP_DUMMY), lp->io);
+	/* send 0 to port */
+	outb_p((unsigned char)(LP_DUMMY), lp->io);
 
-    /* 5 us delay */
-    while (wait != LP_CHAR_WAIT)
-	wait++;
+	/* 5 us delay */
+	while (wait != LP_CHAR_WAIT)
+		wait++;
 
-    /* 0 expected; 255 returned if nonexistent port */
-    if (inb_p(lp->io) == LP_DUMMY) {
-	lp->flags = LP_EXIST;
-	return 0;
-    }
-    return -1;
+	/* 0 expected; 255 returned if nonexistent port */
+	if (inb_p(lp->io) == LP_DUMMY) {
+		lp->flags = LP_EXIST;
+		return 0;
+	}
+	return -1;
 }
 
 #endif
@@ -254,59 +249,60 @@ static int lp_probe(register struct lp_info *lp)
 /*@-type@*/
 
 static struct file_operations lp_fops = {
-    NULL,			/* lseek */
-    NULL,			/* read */
-    lp_write,			/* write */
-    NULL,			/* readdir */
-    NULL,			/* select */
-    NULL,			/* ioctl */
-    lp_open,			/* open */
-    lp_release			/* release */
+	NULL,	   /* lseek */
+	NULL,	   /* read */
+	lp_write,  /* write */
+	NULL,	   /* readdir */
+	NULL,	   /* select */
+	NULL,	   /* ioctl */
+	lp_open,   /* open */
+	lp_release /* release */
 };
 
 /*@+type@*/
 
 void INITPROC lp_init(void)
 {
-    register struct lp_info *lp = &ports[0];
-    int i;
-    int count = 0;
+	register struct lp_info *lp = &ports[0];
+	int i;
+	int count = 0;
 
 #ifdef BIOS_PORTS
 
-    /* only ports 0, 1, 2 and 3 may exist according to RB's intlist */
-    for (i = 0; i < LP_PORTS; i++) {
-	/* 8 is offset for LPT info, 2 bytes for each entry */
-	lp->io = (char *)peekw(2 * i + 8, 0x40);
-	/* returns 0 if port wasn't detected by BIOS at bootup */
-	if (!lp->io)
-	    break;		/* there can be no more ports */
-	printk("lp%d at 0x%x, using polling driver\n", i, lp->io);
-	lp->flags = LP_EXIST;
-	lp++;
-    }
-    count = i;
+	/* only ports 0, 1, 2 and 3 may exist according to RB's intlist */
+	for (i = 0; i < LP_PORTS; i++) {
+		/* 8 is offset for LPT info, 2 bytes for each entry */
+		lp->io = (char *)peekw(2 * i + 8, 0x40);
+		/* returns 0 if port wasn't detected by BIOS at bootup */
+		if (!lp->io)
+			break; /* there can be no more ports */
+		printk("lp%d at 0x%x, using polling driver\n", i, lp->io);
+		lp->flags = LP_EXIST;
+		lp++;
+	}
+	count = i;
 
 #else
 
-    /* probe for ports */
-    for (i = 0; i < LP_PORTS; i++) {
-	if (!lp_probe(lp)) {
-	    printk("lp%d at 0x%x, using polling driver\n", i, lp->io);
-	    port_order[count] = i;
-	    count++;
+	/* probe for ports */
+	for (i = 0; i < LP_PORTS; i++) {
+		if (!lp_probe(lp)) {
+			printk("lp%d at 0x%x, using polling driver\n", i,
+			       lp->io);
+			port_order[count] = i;
+			count++;
+		}
+		lp++;
 	}
-	lp++;
-    }
 
 #endif
 
-    if (count == 0)
-	printk("lp: no ports found\n");
+	if (count == 0)
+		printk("lp: no ports found\n");
 
-    /* register device */
-    if (register_chrdev(LP_MAJOR, LP_DEVICE_NAME, &lp_fops))
-	printk("lp: unable to register\n");
+	/* register device */
+	if (register_chrdev(LP_MAJOR, LP_DEVICE_NAME, &lp_fops))
+		printk("lp: unable to register\n");
 }
 
 #endif /* CONFIG_CHAR_DEV_LP */

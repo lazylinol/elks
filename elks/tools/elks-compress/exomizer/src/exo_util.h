@@ -40,20 +40,27 @@ extern "C" {
  */
 int find_sys(const unsigned char *buf, int target, int *stub_lenp);
 
-enum file_type {UNKNOWN, RAW, ATARI_XEX, ORIC_TAP, APPLESINGLE,
-                APPLESINGLE_SYS, BBC_INF, PRG};
-struct load_info
-{
-    int basic_txt_start; /* in */
-    int basic_var_start; /* out */
-    int run; /* out */
-    int start; /* out */
-    int end; /* out */
-    enum file_type type; /* out */
+enum file_type {
+	UNKNOWN,
+	RAW,
+	ATARI_XEX,
+	ORIC_TAP,
+	APPLESINGLE,
+	APPLESINGLE_SYS,
+	BBC_INF,
+	PRG
+};
+struct load_info {
+	int basic_txt_start; /* in */
+	int basic_var_start; /* out */
+	int run;	     /* out */
+	int start;	     /* out */
+	int end;	     /* out */
+	enum file_type type; /* out */
 };
 
 void load_located(const char *filename, unsigned char mem[65536],
-                  struct load_info *info);
+		  struct load_info *info);
 
 /*
  * returns 0 if the conversion was successful, 1 otherwise.

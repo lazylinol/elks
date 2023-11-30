@@ -36,22 +36,25 @@ extern "C" {
 #include <string.h>
 #include <stdio.h>
 
-#define STATIC_VEC_INIT(EL_SIZE) {(EL_SIZE), STATIC_BUF_INIT, 1}
+#define STATIC_VEC_INIT(EL_SIZE)              \
+	{                                     \
+		(EL_SIZE), STATIC_BUF_INIT, 1 \
+	}
 
 struct vec {
-    size_t elsize;
-    struct buf buf;
-    int flags;
+	size_t elsize;
+	struct buf buf;
+	int flags;
 };
 
 struct vec_iterator {
-    const struct vec *vec;
-    int pos;
+	const struct vec *vec;
+	int pos;
 };
 
 void vec_init(struct vec *p, size_t elsize);
-void vec_clear(struct vec *p, cb_free * f);
-void vec_free(struct vec *p, cb_free * f);
+void vec_clear(struct vec *p, cb_free *f);
+void vec_free(struct vec *p, cb_free *f);
 
 int vec_size(const struct vec *p);
 
@@ -82,13 +85,13 @@ void *vec_push(struct vec *p, const void *in);
  * -1 on error or a negative number that can be converted to where
  * it should have been if it had been inserted. insert_pos = -(val + 2)
  **/
-int vec_find(const struct vec *p, cb_cmp * f, const void *key);
+int vec_find(const struct vec *p, cb_cmp *f, const void *key);
 
 /**
  * Gets a pointer to the element that the key points to.
  * Returns a pointer that may be NULL if not found.
  **/
-void *vec_find2(const struct vec *p, cb_cmp * f, const void *key);
+void *vec_find2(const struct vec *p, cb_cmp *f, const void *key);
 
 /**
  * Inserts the in element in its correct position in a sorted vector.
@@ -96,8 +99,8 @@ void *vec_find2(const struct vec *p, cb_cmp * f, const void *key);
  * present or -1 on error. If out is not NULL it will be
  * dereferenced and set to the inserted or present element.
  **/
-int vec_insert_uniq(struct vec *p, cb_cmp * f, const void *in, void **out);
-void vec_sort(struct vec *p, cb_cmp * f);
+int vec_insert_uniq(struct vec *p, cb_cmp *f, const void *in, void **out);
+void vec_sort(struct vec *p, cb_cmp *f);
 
 /**
  * Gets a restarting iterator for the given vector.

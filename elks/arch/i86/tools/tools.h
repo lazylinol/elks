@@ -19,8 +19,8 @@
  *	FILENAME	"minix.dsk"
  */
 
-#define DISK_SIZE	128
+#define DISK_SIZE 128
 
-#define DRIVE		'm'
+#define DRIVE 'm'
 
-#define FILENAME	"minix.dsk"
+#define FILENAME "minix.dsk"

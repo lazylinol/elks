@@ -34,39 +34,33 @@ extern "C" {
 #include "buf.h"
 #include "flags.h"
 
-struct dec_table
-{
-    unsigned char table_bit[8];
-    unsigned char table_off[8];
-    unsigned char table_bi[100];
-    unsigned char table_lo[100];
-    unsigned char table_hi[100];
+struct dec_table {
+	unsigned char table_bit[8];
+	unsigned char table_off[8];
+	unsigned char table_bi[100];
+	unsigned char table_lo[100];
+	unsigned char table_hi[100];
 };
 
-struct dec_ctx
-{
-    int inpos;
-    int inend;
-    unsigned char *inbuf;
-    struct buf *outbuf;
-    unsigned char bitbuf;
-    /* dep_table */
-    struct dec_table t;
-    int bits_read;
-    int flags_proto;
+struct dec_ctx {
+	int inpos;
+	int inend;
+	unsigned char *inbuf;
+	struct buf *outbuf;
+	unsigned char bitbuf;
+	/* dep_table */
+	struct dec_table t;
+	int bits_read;
+	int flags_proto;
 };
 
 /* returns the encoding */
-void
-dec_ctx_init(struct dec_ctx *ctx,
-             struct buf *enc_in, /* optional */
-             struct buf *inbuf, struct buf *outbuf, int flags_proto);
+void dec_ctx_init(struct dec_ctx *ctx, struct buf *enc_in, /* optional */
+		  struct buf *inbuf, struct buf *outbuf, int flags_proto);
 
-void
-dec_ctx_table_dump(struct dec_ctx *ctx, struct buf *enc_out);
+void dec_ctx_table_dump(struct dec_ctx *ctx, struct buf *enc_out);
 
-void
-dec_ctx_free(struct dec_ctx *ctx);
+void dec_ctx_free(struct dec_ctx *ctx);
 
 void dec_ctx_decrunch(struct dec_ctx *ctx);
 

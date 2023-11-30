@@ -6,7 +6,8 @@
 #include <linuxmt/types.h>
 
 #if defined(CONFIG_FARTEXT_KERNEL) && !defined(__STRICT_ANSI__)
-#define INITPROC __far __attribute__ ((far_section, noinline, section (".fartext.init")))
+#define INITPROC \
+	__far __attribute__((far_section, noinline, section(".fartext.init")))
 /* these symbols defined in elks-small.ld linker script */
 extern void INITPROC __start_fartext_init(void);
 extern void INITPROC __end_fartext_init(void);
@@ -20,13 +21,13 @@ struct drive_infot;
 
 /* kernel init routines*/
 extern void INITPROC kernel_init(void);
-extern int  INITPROC buffer_init(void);
+extern int INITPROC buffer_init(void);
 extern void INITPROC console_init(void);
 extern void INITPROC fs_init(void);
 extern void INITPROC inode_init(void);
 extern void INITPROC irq_init(void);
 extern void save_timer_irq(void);
-extern void INITPROC mm_init(seg_t,seg_t);
+extern void INITPROC mm_init(seg_t, seg_t);
 extern void INITPROC seg_add(seg_t start, seg_t end);
 extern void INITPROC sched_init(void);
 extern void INITPROC serial_init(void);

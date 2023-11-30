@@ -30,110 +30,92 @@ static unsigned short int base[52];
 static char bits[52];
 static unsigned short int bit_buffer;
 
-static unsigned short int
-read_bits(const char **inp, int bit_count)
+static unsigned short int read_bits(const char **inp, int bit_count)
 {
-    unsigned short int bits = 0;
-    while(bit_count-- > 0)
-    {
-        if(bit_buffer == 1)
-        {
-            bit_buffer = 0x100 | (*--(*inp) & 0xff);
-        }
-        bits <<= 1;
-        bits |= bit_buffer & 0x1;
-        bit_buffer >>= 1;
-    }
-    return bits;
+	unsigned short int bits = 0;
+	while (bit_count-- > 0) {
+		if (bit_buffer == 1) {
+			bit_buffer = 0x100 | (*--(*inp) & 0xff);
+		}
+		bits <<= 1;
+		bits |= bit_buffer & 0x1;
+		bit_buffer >>= 1;
+	}
+	return bits;
 }
 
-static void
-init_table(const char **inp)
+static void init_table(const char **inp)
 {
-    int i;
-    unsigned short int b2;
+	int i;
+	unsigned short int b2;
 
-    for(i = 0; i < 52; ++i)
-    {
-        unsigned short int b1;
-        if((i & 15) == 0)
-        {
-            b2 = 1;
-        }
-        base[i] = b2;
+	for (i = 0; i < 52; ++i) {
+		unsigned short int b1;
+		if ((i & 15) == 0) {
+			b2 = 1;
+		}
+		base[i] = b2;
 
-        b1 = read_bits(inp, 4);
-        bits[i] = b1;
+		b1 = read_bits(inp, 4);
+		bits[i] = b1;
 
-        b2 += 1 << b1;
-    }
+		b2 += 1 << b1;
+	}
 }
 
-char *
-exo_decrunch(const char *in, char *out)
+char *exo_decrunch(const char *in, char *out)
 {
-    unsigned short int index;
-    unsigned short int length;
-    unsigned short int offset;
-    char c;
-    char literal;
+	unsigned short int index;
+	unsigned short int length;
+	unsigned short int offset;
+	char c;
+	char literal;
 
-    bit_buffer = *--in;
+	bit_buffer = *--in;
 
-    init_table(&in);
-    for(;;)
-    {
-        literal = read_bits(&in, 1);
-        if(literal == 1)
-        {
-            /* literal byte */
-            length = 1;
-            goto copy;
-        }
-        index = 0;
-        while(read_bits(&in, 1) == 0)
-        {
-            ++index;
-        }
-        if(index == 16)
-        {
-            break;
-        }
-        if(index == 17)
-        {
-            literal = 1;
-            length = read_bits(&in, 16);
-            goto copy;
-        }
-        length = base[index] + read_bits(&in, bits[index]);
-        switch(length)
-        {
-        case 1:
-            index = 48 + read_bits(&in, 2);
-            break;
-        case 2:
-            index = 32 + read_bits(&in, 4);
-            break;
-        default:
-            index = 16 + read_bits(&in, 4);
-            break;
-        }
-        offset = base[index] + read_bits(&in, bits[index]);
-    copy:
-        do
-        {
-            --out;
-            if(literal)
-            {
-                c = *--in;
-            }
-            else
-            {
-                c = out[offset];
-            }
-            *out = c;
-        }
-        while(--length > 0);
-    }
-    return out;
+	init_table(&in);
+	for (;;) {
+		literal = read_bits(&in, 1);
+		if (literal == 1) {
+			/* literal byte */
+			length = 1;
+			goto copy;
+		}
+		index = 0;
+		while (read_bits(&in, 1) == 0) {
+			++index;
+		}
+		if (index == 16) {
+			break;
+		}
+		if (index == 17) {
+			literal = 1;
+			length = read_bits(&in, 16);
+			goto copy;
+		}
+		length = base[index] + read_bits(&in, bits[index]);
+		switch (length) {
+		case 1:
+			index = 48 + read_bits(&in, 2);
+			break;
+		case 2:
+			index = 32 + read_bits(&in, 4);
+			break;
+		default:
+			index = 16 + read_bits(&in, 4);
+			break;
+		}
+		offset = base[index] + read_bits(&in, bits[index]);
+copy:
+		do {
+			--out;
+			if (literal) {
+				c = *--in;
+			} else {
+				c = out[offset];
+			}
+			*out = c;
+		} while (--length > 0);
+	}
+	return out;
 }

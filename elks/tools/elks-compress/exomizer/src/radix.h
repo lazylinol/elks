@@ -34,26 +34,26 @@ extern "C" {
 #include "chunkpool.h"
 
 struct radix_root {
-    int depth;
-    struct radix_node *root;
-    struct chunkpool mem;
+	int depth;
+	struct radix_node *root;
+	struct chunkpool mem;
 };
 
 typedef void free_callback(void *data, void *priv);
 
 /* *f will be called even for null pointers */
-void radix_tree_free(struct radix_root *rr,     /* IN */
-                     free_callback * f, /* IN */
-                     void *priv);       /* IN */
+void radix_tree_free(struct radix_root *rr, /* IN */
+		     free_callback *f,	    /* IN */
+		     void *priv);	    /* IN */
 
-void radix_tree_init(struct radix_root *rr);    /* IN */
+void radix_tree_init(struct radix_root *rr); /* IN */
 
-void radix_node_set(struct radix_root *rr,      /* IN */
-                    unsigned int index, /* IN */
-                    void *data);        /* IN */
+void radix_node_set(struct radix_root *rr, /* IN */
+		    unsigned int index,	   /* IN */
+		    void *data);	   /* IN */
 
-void *radix_node_get(struct radix_root *rr,     /* IN */
-                     unsigned int index);       /* IN */
+void *radix_node_get(struct radix_root *rr, /* IN */
+		     unsigned int index);   /* IN */
 
 #ifdef __cplusplus
 }

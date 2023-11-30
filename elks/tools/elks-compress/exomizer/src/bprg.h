@@ -34,67 +34,51 @@ extern "C" {
 #include "vec.h"
 
 struct bprg_ctx {
-    unsigned short len;
-    unsigned short start;
-    unsigned short basic_start;
-    unsigned char mem[65536];
+	unsigned short len;
+	unsigned short start;
+	unsigned short basic_start;
+	unsigned char mem[65536];
 };
 
 struct bprg_iterator {
-    const unsigned char *mem;
-    unsigned short pos;
+	const unsigned char *mem;
+	unsigned short pos;
 };
 
 typedef int cb_line_mutate(const unsigned char *in, /* IN */
-                           unsigned char *mem, /* IN/OUT */
-                           unsigned short *pos, /* IN/OUT */
-                           void *priv); /* IN/OUT */
+			   unsigned char *mem,	    /* IN/OUT */
+			   unsigned short *pos,	    /* IN/OUT */
+			   void *priv);		    /* IN/OUT */
 
-void
-bprg_init(struct bprg_ctx *ctx, const char *prg_name);
+void bprg_init(struct bprg_ctx *ctx, const char *prg_name);
 
-void
-bprg_save(struct bprg_ctx *ctx, const char *prg_name);
+void bprg_save(struct bprg_ctx *ctx, const char *prg_name);
 
-void
-bprg_free(struct bprg_ctx *ctx);
+void bprg_free(struct bprg_ctx *ctx);
 
-void
-bprg_get_iterator(struct bprg_ctx *ctx, struct bprg_iterator *i);
+void bprg_get_iterator(struct bprg_ctx *ctx, struct bprg_iterator *i);
 
 struct brow {
-    unsigned char row[1]; /* Flexible array member */
+	unsigned char row[1]; /* Flexible array member */
 };
 
-int
-bprg_iterator_next(struct bprg_iterator *i, struct brow **b);
+int bprg_iterator_next(struct bprg_iterator *i, struct brow **b);
 
-void
-bprg_lines_mutate(struct bprg_ctx *ctx,
-                  cb_line_mutate *f,
-                  void *priv);
+void bprg_lines_mutate(struct bprg_ctx *ctx, cb_line_mutate *f, void *priv);
 
 /* higher level functions */
-void
-bprg_renumber(struct bprg_ctx *ctx,
-              int start,
-              int step,
-              int mode);
+void bprg_renumber(struct bprg_ctx *ctx, int start, int step, int mode);
 
-void
-bprg_link_patch(struct bprg_ctx *ctx);
+void bprg_link_patch(struct bprg_ctx *ctx);
 
-void
-bprg_rem_remove(struct bprg_ctx *ctx);
+void bprg_rem_remove(struct bprg_ctx *ctx);
 
 #define TRAMPOLINE_FLAG_C264 1
 #define TRAMPOLINE_FLAG_REGEN 2
 #define TRAMPOLINE_FLAG_C264_COLOR_REGEN 4
 
-void
-bprg_trampoline_add(struct bprg_ctx *ctx,
-                    int *start, int *var, int *end,
-                    int flags);
+void bprg_trampoline_add(struct bprg_ctx *ctx, int *start, int *var, int *end,
+			 int flags);
 #ifdef __cplusplus
 }
 #endif

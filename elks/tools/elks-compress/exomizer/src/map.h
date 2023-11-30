@@ -35,18 +35,21 @@ extern "C" {
 #include "callback.h"
 
 struct map_entry {
-    const char *key;
-    void *value;
+	const char *key;
+	void *value;
 };
 
-#define STATIC_MAP_INIT {STATIC_VEC_INIT(sizeof(struct map_entry))}
+#define STATIC_MAP_INIT                                   \
+	{                                                 \
+		STATIC_VEC_INIT(sizeof(struct map_entry)) \
+	}
 
 struct map {
-    struct vec vec;
+	struct vec vec;
 };
 
 struct map_iterator {
-    struct vec_iterator vec;
+	struct vec_iterator vec;
 };
 
 void map_init(struct map *m);

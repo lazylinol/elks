@@ -41,19 +41,19 @@ extern "C" {
  *        (1, 2 and 3) using dedicated decrunch tables: 0=two, 1=three
  * bit 5  Decides if we are reusing offsets: 1=enable, 0=disable
  */
-#define PBIT_BITS_ORDER_BE     0
-#define PBIT_BITS_COPY_GT_7    1
-#define PBIT_IMPL_1LITERAL     2
-#define PBIT_BITS_ALIGN_START  3
-#define PBIT_4_OFFSET_TABLES   4
-#define PBIT_REUSE_OFFSET      5
+#define PBIT_BITS_ORDER_BE 0
+#define PBIT_BITS_COPY_GT_7 1
+#define PBIT_IMPL_1LITERAL 2
+#define PBIT_BITS_ALIGN_START 3
+#define PBIT_4_OFFSET_TABLES 4
+#define PBIT_REUSE_OFFSET 5
 
-#define PFLAG_BITS_ORDER_BE    (1 << PBIT_BITS_ORDER_BE)
-#define PFLAG_BITS_COPY_GT_7   (1 << PBIT_BITS_COPY_GT_7)
-#define PFLAG_IMPL_1LITERAL    (1 << PBIT_IMPL_1LITERAL)
+#define PFLAG_BITS_ORDER_BE (1 << PBIT_BITS_ORDER_BE)
+#define PFLAG_BITS_COPY_GT_7 (1 << PBIT_BITS_COPY_GT_7)
+#define PFLAG_IMPL_1LITERAL (1 << PBIT_IMPL_1LITERAL)
 #define PFLAG_BITS_ALIGN_START (1 << PBIT_BITS_ALIGN_START)
-#define PFLAG_4_OFFSET_TABLES  (1 << PBIT_4_OFFSET_TABLES)
-#define PFLAG_REUSE_OFFSET     (1 << PBIT_REUSE_OFFSET)
+#define PFLAG_4_OFFSET_TABLES (1 << PBIT_4_OFFSET_TABLES)
+#define PFLAG_REUSE_OFFSET (1 << PBIT_REUSE_OFFSET)
 
 /*
  * bit 0  Literal sequences
@@ -65,8 +65,8 @@ extern "C" {
 #define TBIT_LEN1_SEQ 1
 #define TBIT_LEN0123_SEQ_MIRRORS 2
 
-#define TFLAG_LIT_SEQ            (1 << TBIT_LIT_SEQ)
-#define TFLAG_LEN1_SEQ           (1 << TBIT_LEN1_SEQ)
+#define TFLAG_LIT_SEQ (1 << TBIT_LIT_SEQ)
+#define TFLAG_LEN1_SEQ (1 << TBIT_LEN1_SEQ)
 #define TFLAG_LEN0123_SEQ_MIRRORS (1 << TBIT_LEN0123_SEQ_MIRRORS)
 
 #ifdef __cplusplus

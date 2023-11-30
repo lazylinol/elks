@@ -8,7 +8,7 @@
 /* limits */
 
 #define MAX_CHRDEV 11
-#define MAX_BLKDEV  7
+#define MAX_BLKDEV 7
 
 /*
  * assignments
@@ -30,29 +30,28 @@
  * 10 - /dev/cgatext
  */
 
-#define UNNAMED_MAJOR     0
+#define UNNAMED_MAJOR 0
 
 /* These are the character devices */
 
-#define MEM_MAJOR         1
-#define PTY_MASTER_MAJOR  2
-                             /* 3 unused*/
-#define TTY_MAJOR         4
-                             /* 5 unused*/
-#define LP_MAJOR          6
-#define UDD_MAJOR         7  /* experimental*/
-#define TCPDEV_MAJOR      8
-#define ETH_MAJOR         9
-#define CGATEXT_MAJOR     10
+#define MEM_MAJOR 1
+#define PTY_MASTER_MAJOR 2
+/* 3 unused*/
+#define TTY_MAJOR 4
+/* 5 unused*/
+#define LP_MAJOR 6
+#define UDD_MAJOR 7 /* experimental*/
+#define TCPDEV_MAJOR 8
+#define ETH_MAJOR 9
+#define CGATEXT_MAJOR 10
 
 /* These are the block devices */
 
-#define RAM_MAJOR         1
-#define SSD_MAJOR         2
-#define BIOSHD_MAJOR      3
-#define FLOPPY_MAJOR      4
-#define ATHD_MAJOR        5  /* experimental*/
-#define ROMFLASH_MAJOR    6
+#define RAM_MAJOR 1
+#define SSD_MAJOR 2
+#define BIOSHD_MAJOR 3
+#define FLOPPY_MAJOR 4
+#define ATHD_MAJOR 5 /* experimental*/
+#define ROMFLASH_MAJOR 6
 
-
-#endif  /* !__LINUXMT_MAJOR_H */
+#endif /* !__LINUXMT_MAJOR_H */

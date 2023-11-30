@@ -35,29 +35,30 @@ extern "C" {
 #include "vec.h"
 #include "buf.h"
 
-struct measurement
-{
-    const char *name;
-    int size;
-    float reduced;
-    int cycles;
-    float cb_out;
-    float bkc_out;
-    int hidden;
+struct measurement {
+	const char *name;
+	int size;
+	float reduced;
+	int cycles;
+	float cb_out;
+	float bkc_out;
+	int hidden;
 };
 
-#define STATIC_PERF_INIT {STATIC_VEC_INIT(sizeof(struct measurement))}
+#define STATIC_PERF_INIT                                    \
+	{                                                   \
+		STATIC_VEC_INIT(sizeof(struct measurement)) \
+	}
 
-struct perf_ctx
-{
-    struct vec measurements;
+struct perf_ctx {
+	struct vec measurements;
 };
 
 void perf_init(struct perf_ctx *perf);
 void perf_free(struct perf_ctx *perf);
 
-void perf_add(struct perf_ctx *perf, const char *name,
-              int in_size, int out_size, int cycles);
+void perf_add(struct perf_ctx *perf, const char *name, int in_size,
+	      int out_size, int cycles);
 
 void perf_sort_size_cycles(struct perf_ctx *perf, int pareto_hide);
 void perf_sort_cycles_size(struct perf_ctx *perf, int pareto_hide);

@@ -31,28 +31,28 @@
 
 void enable_timer_tick(void)
 {
-    /* Set Timer2 Maxcount register */
-    outw(TIMER2_INTERVAL, PCB_T2CMPA);
-    /* Clear the Timer count register before starting it */
-    outw(0x0000, PCB_T2CNT);
+	/* Set Timer2 Maxcount register */
+	outw(TIMER2_INTERVAL, PCB_T2CMPA);
+	/* Clear the Timer count register before starting it */
+	outw(0x0000, PCB_T2CNT);
 
-    /* Set Timer1 Maxcount register */
-    outw(TIMER1_INTERVAL, PCB_T1CMPA);
-    /* Clear the Timer count register before starting it */
-    outw(0x0000, PCB_T1CNT);
+	/* Set Timer1 Maxcount register */
+	outw(TIMER1_INTERVAL, PCB_T1CMPA);
+	/* Clear the Timer count register before starting it */
+	outw(0x0000, PCB_T1CNT);
 
-    /* Enable Timer2, release inhibit to change EN bit, continuous mode */
-    outw(0xc001, PCB_T2CON);
+	/* Enable Timer2, release inhibit to change EN bit, continuous mode */
+	outw(0xc001, PCB_T2CON);
 
-    /* Enable Timer1, release inhibit to change EN bit, INT enabled, use Timer2 as source, continuous mode */
-    outw(0xe009, PCB_T1CON);
+	/* Enable Timer1, release inhibit to change EN bit, INT enabled, use Timer2 as source, continuous mode */
+	outw(0xe009, PCB_T1CON);
 }
 
 void disable_timer_tick(void)
 {
-    /* Disable Timer2, release inhibit to change EN bit */
-    outw(0x4000, PCB_T2CON);
+	/* Disable Timer2, release inhibit to change EN bit */
+	outw(0x4000, PCB_T2CON);
 
-    /* Disable Timer1, release inhibit to change EN bit */
-    outw(0x4000, PCB_T1CON);
+	/* Disable Timer1, release inhibit to change EN bit */
+	outw(0x4000, PCB_T1CON);
 }

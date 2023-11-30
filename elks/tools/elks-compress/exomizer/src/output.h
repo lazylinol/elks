@@ -36,37 +36,37 @@ extern "C" {
 #include <stdio.h>
 
 struct output_ctx {
-    unsigned char bitbuf;
-    unsigned char bitcount;
-    int pos;
-    int start;
-    struct buf *buf;
-    int flags_proto;
+	unsigned char bitbuf;
+	unsigned char bitcount;
+	int pos;
+	int start;
+	struct buf *buf;
+	int flags_proto;
 };
 
-void output_ctx_init(struct output_ctx *ctx,    /* IN/OUT */
-                     int flags_proto, /* IN */
-                     struct buf *out);       /* IN/OUT */
+void output_ctx_init(struct output_ctx *ctx, /* IN/OUT */
+		     int flags_proto,	     /* IN */
+		     struct buf *out);	     /* IN/OUT */
 
-unsigned int output_get_pos(struct output_ctx *ctx);    /* IN */
+unsigned int output_get_pos(struct output_ctx *ctx); /* IN */
 
-void output_byte(struct output_ctx *ctx,        /* IN/OUT */
-                 unsigned char byte);   /* IN */
+void output_byte(struct output_ctx *ctx, /* IN/OUT */
+		 unsigned char byte);	 /* IN */
 
-void output_word(struct output_ctx *ctx,        /* IN/OUT */
-                 unsigned short int word);      /* IN */
+void output_word(struct output_ctx *ctx,   /* IN/OUT */
+		 unsigned short int word); /* IN */
 
-void output_bits_flush(struct output_ctx *ctx,  /* IN/OUT */
-                       int add_marker_bit);     /* IN */
+void output_bits_flush(struct output_ctx *ctx, /* IN/OUT */
+		       int add_marker_bit);    /* IN */
 
-int output_bits_alignment(struct output_ctx *ctx);      /* IN */
+int output_bits_alignment(struct output_ctx *ctx); /* IN */
 
-void output_bits(struct output_ctx *ctx,        /* IN/OUT */
-                 int count,     /* IN */
-                 int val);      /* IN */
+void output_bits(struct output_ctx *ctx, /* IN/OUT */
+		 int count,		 /* IN */
+		 int val);		 /* IN */
 
-void output_gamma_code(struct output_ctx *ctx,  /* IN/OUT */
-                       int code);       /* IN */
+void output_gamma_code(struct output_ctx *ctx, /* IN/OUT */
+		       int code);	       /* IN */
 #ifdef __cplusplus
 }
 #endif

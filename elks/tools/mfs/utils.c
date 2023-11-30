@@ -35,13 +35,14 @@
  * @param s - string format
  * @effect This function causes the program to die
  */
-void fatalmsg(const char *s,...) {
-  va_list p;
-  va_start(p,s);
-  vfprintf(stderr,s,p);
-  va_end(p);
-  putc('\n',stderr);  
-  exit(-1);
+void fatalmsg(const char *s, ...)
+{
+	va_list p;
+	va_start(p, s);
+	vfprintf(stderr, s, p);
+	va_end(p);
+	putc('\n', stderr);
+	exit(-1);
 }
 
 /**
@@ -49,16 +50,17 @@ void fatalmsg(const char *s,...) {
  * @param s - string format
  * @effect This function causes the program to die.
  */
-void die(const char *s,...) {
-  va_list p;
-  va_start(p,s);
-  vfprintf(stderr,s,p);
-  va_end(p);
-  putc(':',stderr);
-  putc(' ',stderr);
-  perror(NULL);
-  putc('\n',stderr);
-  exit(errno);
+void die(const char *s, ...)
+{
+	va_list p;
+	va_start(p, s);
+	vfprintf(stderr, s, p);
+	va_end(p);
+	putc(':', stderr);
+	putc(' ', stderr);
+	perror(NULL);
+	putc('\n', stderr);
+	exit(errno);
 }
 
 /**
@@ -67,12 +69,13 @@ void die(const char *s,...) {
  * @param blk - Block to go to
  * @return fp
  */
-FILE *goto_blk(FILE *fp,unsigned int blk) {
-  fflush(fp);
-  if (fseek(fp,blk*BLOCK_SIZE,SEEK_SET)) {
-    die("fseek");
-  }
-  return fp;
+FILE *goto_blk(FILE *fp, unsigned int blk)
+{
+	fflush(fp);
+	if (fseek(fp, blk * BLOCK_SIZE, SEEK_SET)) {
+		die("fseek");
+	}
+	return fp;
 }
 
 /**
@@ -82,11 +85,12 @@ FILE *goto_blk(FILE *fp,unsigned int blk) {
  * @param cnt - bytes to write
  * @return buff
  */
-void *dofwrite(FILE *fp,void *buff,int cnt) {
-  if (cnt != fwrite(buff,1,cnt,fp)) {
-    die("fwrite");
-  }
-  return buff;
+void *dofwrite(FILE *fp, void *buff, int cnt)
+{
+	if (cnt != fwrite(buff, 1, cnt, fp)) {
+		die("fwrite");
+	}
+	return buff;
 }
 
 /**
@@ -96,11 +100,12 @@ void *dofwrite(FILE *fp,void *buff,int cnt) {
  * @param cnt - bytes to read
  * @return buff
  */
-void *dofread(FILE *fp,void *buff,int cnt) {
-  if (cnt != fread(buff,1,cnt,fp)) {
-    die("fread");
-  }
-  return buff;
+void *dofread(FILE *fp, void *buff, int cnt)
+{
+	if (cnt != fread(buff, 1, cnt, fp)) {
+		die("fread");
+	}
+	return buff;
 }
 
 /**
@@ -109,31 +114,34 @@ void *dofread(FILE *fp,void *buff,int cnt) {
  * @param elm - Initialize memory to this value.  -1 for no initialization
  * @return pointer to newly allocated memory.
  */
-void *domalloc(unsigned long size,int elm) {
-  void *ptr = malloc(size);
-  if (!ptr) {
-    die("malloc");
-  }
-  if (elm >= 0) {
-    memset(ptr,elm,size);
-  }
-  return ptr;
+void *domalloc(unsigned long size, int elm)
+{
+	void *ptr = malloc(size);
+	if (!ptr) {
+		die("malloc");
+	}
+	if (elm >= 0) {
+		memset(ptr, elm, size);
+	}
+	return ptr;
 }
 
 /**
  * Wrapper around getuid
  */
-int dogetuid(void) {
-  if (opt_keepuid)
-    return getuid();    
-  return 0;
+int dogetuid(void)
+{
+	if (opt_keepuid)
+		return getuid();
+	return 0;
 }
 
 /**
  * Wrapper around getgid
  */
-int dogetgid(void) {
-  if (opt_keepuid)
-  	return getgid();    
-  return 0;
+int dogetgid(void)
+{
+	if (opt_keepuid)
+		return getgid();
+	return 0;
 }

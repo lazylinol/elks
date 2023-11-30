@@ -20,13 +20,13 @@
 /*
  *	System variable setups
  */
-#define ENV             1       /* allow environ variables as bootopts*/
-#define DEBUG           0       /* display parsing at boot*/
+#define ENV 1	/* allow environ variables as bootopts*/
+#define DEBUG 0 /* display parsing at boot*/
 
 #include <linuxmt/debug.h>
 
-#define MAX_INIT_ARGS	8
-#define MAX_INIT_ENVS	8
+#define MAX_INIT_ARGS 8
+#define MAX_INIT_ENVS 8
 
 #if defined(CONFIG_FS_RO) || defined(CONFIG_ROOT_READONLY)
 int root_mountflags = MS_RDONLY;
@@ -34,11 +34,11 @@ int root_mountflags = MS_RDONLY;
 int root_mountflags = 0;
 #endif
 struct netif_parms netif_parms[MAX_ETHS] = {
-    /* NOTE:  The order must match the defines in netstat.h:
+	/* NOTE:  The order must match the defines in netstat.h:
      * ETH_NE2K, ETH_WD, ETH_EL3    */
-    { NE2K_IRQ, NE2K_PORT, 0, NE2K_FLAGS },
-    { WD_IRQ, WD_PORT, WD_RAM, WD_FLAGS },
-    { EL3_IRQ, EL3_PORT, 0, EL3_FLAGS },
+	{ NE2K_IRQ, NE2K_PORT, 0, NE2K_FLAGS },
+	{ WD_IRQ, WD_PORT, WD_RAM, WD_FLAGS },
+	{ EL3_IRQ, EL3_PORT, 0, EL3_FLAGS },
 };
 __u16 kernel_cs, kernel_ds;
 int tracing;
@@ -56,7 +56,7 @@ static char *init_command = bininit;
 /*
  * Parse /bootopts startup options
  */
-static int args = 2;	/* room for argc and av[0] */
+static int args = 2; /* room for argc and av[0] */
 static int envs;
 static int argv_slen;
 #ifdef CONFIG_SYS_NO_BININIT
@@ -66,186 +66,192 @@ static char *argv_init[80] = { NULL, binshell, NULL };
 static char *argv_init[80] = { NULL, bininit, NULL };
 #endif
 #if ENV
-static char *envp_init[MAX_INIT_ENVS+1];
+static char *envp_init[MAX_INIT_ENVS + 1];
 #endif
 static unsigned char options[OPTSEGSZ];
 
 extern int boot_rootdev;
 extern int dprintk_on;
-static char * INITPROC root_dev_name(int dev);
+static char *INITPROC root_dev_name(int dev);
 static int INITPROC parse_options(void);
 static void INITPROC finalize_options(void);
-static char * INITPROC option(char *s);
+static char *INITPROC option(char *s);
 
 #endif
 
 static void init_task(void);
-static void INITPROC kernel_banner(seg_t start, seg_t end, seg_t init, seg_t extra);
-
+static void INITPROC kernel_banner(seg_t start, seg_t end, seg_t init,
+				   seg_t extra);
 
 void start_kernel(void)
 {
-    kernel_init();
+	kernel_init();
 
-    /* fork and run procedure init_task() as task #1*/
-    kfork_proc(init_task);
-    wake_up_process(&task[1]);
+	/* fork and run procedure init_task() as task #1*/
+	kfork_proc(init_task);
+	wake_up_process(&task[1]);
 
-    /*
+	/*
      * We are now the idle task. We won't run unless no other process can run.
      */
-    while (1) {
-        schedule();
+	while (1) {
+		schedule();
 #ifdef CONFIG_TIMER_INT0F
-        int0F();        /* simulate timer interrupt hooked on IRQ 7 */
+		int0F(); /* simulate timer interrupt hooked on IRQ 7 */
 #else
-        idle_halt();    /* halt until interrupt to save power */
+		idle_halt(); /* halt until interrupt to save power */
 #endif
-    }
+	}
 }
 
 void INITPROC kernel_init(void)
 {
-    seg_t base, end;
+	seg_t base, end;
 
-    /* sched_init sets us (the current stack) to be idle task #0*/
-    sched_init();
-    setup_arch(&base, &end);
-    mm_init(base, end);
-    irq_init();
-    tty_init();
+	/* sched_init sets us (the current stack) to be idle task #0*/
+	sched_init();
+	setup_arch(&base, &end);
+	mm_init(base, end);
+	irq_init();
+	tty_init();
 
 #ifdef CONFIG_TIME_TZ
-    tz_init(CONFIG_TIME_TZ);
+	tz_init(CONFIG_TIME_TZ);
 #endif
 
 #ifdef CONFIG_BOOTOPTS
-    /* parse options found in /bootops */
-    int opts = parse_options();
+	/* parse options found in /bootops */
+	int opts = parse_options();
 #endif
 
-    /* set console from /bootopts console= or 0=default*/
-    set_console(boot_console);
+	/* set console from /bootopts console= or 0=default*/
+	set_console(boot_console);
 
-    /* init direct, bios or headless console*/
-    console_init();
+	/* init direct, bios or headless console*/
+	console_init();
 
 #ifdef CONFIG_CHAR_DEV_RS
-    serial_init();
+	serial_init();
 #endif
 
-    inode_init();
-    if (buffer_init())	/* also enables xms and unreal mode if configured and possible*/
-        panic("No buf mem");
+	inode_init();
+	if (buffer_init()) /* also enables xms and unreal mode if configured and possible*/
+		panic("No buf mem");
 
-    device_init();
+	device_init();
 
 #ifdef CONFIG_SOCKET
-    sock_init();
+	sock_init();
 #endif
 
-    fs_init();
+	fs_init();
 
 #ifdef CONFIG_BOOTOPTS
-    finalize_options();
-    if (!opts) printk("/bootopts not found or bad format/size\n");
+	finalize_options();
+	if (!opts)
+		printk("/bootopts not found or bad format/size\n");
 #endif
 
 #ifdef CONFIG_FARTEXT_KERNEL
-    /* add .farinit.init section to main memory free list */
-    seg_t     init_seg = ((unsigned long)(void __far *)__start_fartext_init) >> 16;
-    seg_t s = init_seg + (((word_t)(void *)__start_fartext_init + 15) >> 4);
-    seg_t e = init_seg + (((word_t)(void *)  __end_fartext_init + 15) >> 4);
-    debug("init: seg %04x to %04x size %04x (%d)\n", s, e, (e - s) << 4, (e - s) << 4);
-    seg_add(s, e);
+	/* add .farinit.init section to main memory free list */
+	seg_t init_seg = ((unsigned long)(void __far *)__start_fartext_init) >>
+			 16;
+	seg_t s = init_seg + (((word_t)(void *)__start_fartext_init + 15) >> 4);
+	seg_t e = init_seg + (((word_t)(void *)__end_fartext_init + 15) >> 4);
+	debug("init: seg %04x to %04x size %04x (%d)\n", s, e, (e - s) << 4,
+	      (e - s) << 4);
+	seg_add(s, e);
 #else
-    seg_t s = 0, e = 0;
+	seg_t s = 0, e = 0;
 #endif
 
-    kernel_banner(base, end, s, e - s);
+	kernel_banner(base, end, s, e - s);
 }
 
-static void INITPROC kernel_banner(seg_t start, seg_t end, seg_t init, seg_t extra)
+static void INITPROC kernel_banner(seg_t start, seg_t end, seg_t init,
+				   seg_t extra)
 {
 #ifdef CONFIG_ARCH_IBMPC
-    printk("PC/%cT class machine, ", (sys_caps & CAP_PC_AT) ? 'A' : 'X');
+	printk("PC/%cT class machine, ", (sys_caps & CAP_PC_AT) ? 'A' : 'X');
 #endif
 
 #ifdef CONFIG_ARCH_PC98
-    printk("PC-9801 machine, ");
+	printk("PC-9801 machine, ");
 #endif
 
 #ifdef CONFIG_ARCH_8018X
-    printk("8018X machine, ");
+	printk("8018X machine, ");
 #endif
 
-    printk("syscaps %x, %uK base ram\n", sys_caps, SETUP_MEM_KBYTES);
-    printk("ELKS %s (%u text, %u ftext, %u data, %u bss, %u heap)\n",
-           system_utsname.release,
-           (unsigned)_endtext, (unsigned)_endftext, (unsigned)_enddata,
-           (unsigned)_endbss - (unsigned)_enddata, heapsize);
-    printk("Kernel text %x:0, ", kernel_cs);
+	printk("syscaps %x, %uK base ram\n", sys_caps, SETUP_MEM_KBYTES);
+	printk("ELKS %s (%u text, %u ftext, %u data, %u bss, %u heap)\n",
+	       system_utsname.release, (unsigned)_endtext, (unsigned)_endftext,
+	       (unsigned)_enddata, (unsigned)_endbss - (unsigned)_enddata,
+	       heapsize);
+	printk("Kernel text %x:0, ", kernel_cs);
 #ifdef CONFIG_FARTEXT_KERNEL
-    printk("ftext %x:0, init %x:0, ", (unsigned)((long)kernel_init >> 16), init);
+	printk("ftext %x:0, init %x:0, ", (unsigned)((long)kernel_init >> 16),
+	       init);
 #endif
-    printk("data %x:0, top %x:0, %uK free\n",
-           kernel_ds, end, (int) ((end - start + extra) >> 6));
+	printk("data %x:0, top %x:0, %uK free\n", kernel_ds, end,
+	       (int)((end - start + extra) >> 6));
 }
 
 static void INITPROC try_exec_process(const char *path)
 {
-    int num;
+	int num;
 
-    num = run_init_process(path);
-    if (num) printk("Can't run %s, errno %d\n", path, num);
+	num = run_init_process(path);
+	if (num)
+		printk("Can't run %s, errno %d\n", path, num);
 }
 
 static void INITPROC do_init_task(void)
 {
-    int num;
-    const char *s;
+	int num;
+	const char *s;
 
-    mount_root();
+	mount_root();
 
 #ifdef CONFIG_SYS_NO_BININIT
-    /* when no /bin/init, force initial process group on console to make signals work*/
-    current->session = current->pgrp = 1;
+	/* when no /bin/init, force initial process group on console to make signals work*/
+	current->session = current->pgrp = 1;
 #endif
 
-    /* Don't open /dev/console for /bin/init, 0-2 closed immediately and fragments heap*/
-    //if (strcmp(init_command, bininit) != 0) {
-        /* Set stdin/stdout/stderr to /dev/console if not running /bin/init*/
-        num = sys_open(s="/dev/console", O_RDWR, 0);
-        if (num < 0)
-            printk("Unable to open %s (error %d)\n", s, num);
-        sys_dup(num);		/* open stdout*/
-        sys_dup(num);		/* open stderr*/
-    //}
+	/* Don't open /dev/console for /bin/init, 0-2 closed immediately and fragments heap*/
+	//if (strcmp(init_command, bininit) != 0) {
+	/* Set stdin/stdout/stderr to /dev/console if not running /bin/init*/
+	num = sys_open(s = "/dev/console", O_RDWR, 0);
+	if (num < 0)
+		printk("Unable to open %s (error %d)\n", s, num);
+	sys_dup(num); /* open stdout*/
+	sys_dup(num); /* open stderr*/
+		      //}
 
 #ifdef CONFIG_BOOTOPTS
-    /* pass argc/argv/env array to init_command */
+	/* pass argc/argv/env array to init_command */
 
-    /* unset special sys_wait4() processing if pid 1 not /bin/init*/
-    if (strcmp(init_command, bininit) != 0)
-        current->ppid = 1;      /* turns off auto-child reaping*/
+	/* unset special sys_wait4() processing if pid 1 not /bin/init*/
+	if (strcmp(init_command, bininit) != 0)
+		current->ppid = 1; /* turns off auto-child reaping*/
 
-    /* run /bin/init or init= command, normally no return*/
-    run_init_process_sptr(init_command, (char *)argv_init, argv_slen);
+	/* run /bin/init or init= command, normally no return*/
+	run_init_process_sptr(init_command, (char *)argv_init, argv_slen);
 #else
-    try_exec_process(init_command);
+	try_exec_process(init_command);
 #endif /* CONFIG_BOOTOPTS */
 
-    printk("No init - running %s\n", binshell);
-    current->ppid = 1;			/* turns off auto-child reaping*/
-    try_exec_process(binshell);
-    try_exec_process("/bin/sash");
-    panic("No init or sh found");
+	printk("No init - running %s\n", binshell);
+	current->ppid = 1; /* turns off auto-child reaping*/
+	try_exec_process(binshell);
+	try_exec_process("/bin/sash");
+	panic("No init or sh found");
 }
 
 /* this procedure runs in user mode as task 1*/
 static void init_task(void)
 {
-    do_init_task();
+	do_init_task();
 }
 
 #ifdef CONFIG_BOOTOPTS
@@ -254,39 +260,30 @@ static struct dev_name_struct {
 	int num;
 } devices[] = {
 	/* the 4 partitionable drives must be first */
-	{ "hda",     DEV_HDA },
-	{ "hdb",     DEV_HDB },
-	{ "hdc",     DEV_HDC },
-	{ "hdd",     DEV_HDD },
-	{ "fd0",     DEV_FD0 },
-	{ "fd1",     DEV_FD1 },
-	{ "df0",     DEV_DF0 },
-	{ "df1",     DEV_DF1 },
-	{ "ttyS0",   DEV_TTYS0 },
-	{ "ttyS1",   DEV_TTYS1 },
-	{ "tty1",    DEV_TTY1 },
-	{ "tty2",    DEV_TTY2 },
-	{ "tty3",    DEV_TTY3 },
-	{ NULL,           0 }
+	{ "hda", DEV_HDA },	{ "hdb", DEV_HDB },   { "hdc", DEV_HDC },
+	{ "hdd", DEV_HDD },	{ "fd0", DEV_FD0 },   { "fd1", DEV_FD1 },
+	{ "df0", DEV_DF0 },	{ "df1", DEV_DF1 },   { "ttyS0", DEV_TTYS0 },
+	{ "ttyS1", DEV_TTYS1 }, { "tty1", DEV_TTY1 }, { "tty2", DEV_TTY2 },
+	{ "tty3", DEV_TTY3 },	{ NULL, 0 }
 };
 
 /*
  * Convert a root device number to name.
  * Device number could be bios device, not kdev_t.
  */
-static char * INITPROC root_dev_name(int dev)
+static char *INITPROC root_dev_name(int dev)
 {
 	int i;
-#define NAMEOFF	13
+#define NAMEOFF 13
 	static char name[18] = "ROOTDEV=/dev/";
 
-	for (i=0; i<5; i++) {
+	for (i = 0; i < 5; i++) {
 		if (devices[i].num == (dev & 0xfff0)) {
 			strcpy(&name[NAMEOFF], devices[i].name);
 			if (i < 4) {
 				if (dev & 0x07) {
-					name[NAMEOFF+3] = '0' + (dev & 7);
-					name[NAMEOFF+4] = '\0';
+					name[NAMEOFF + 3] = '0' + (dev & 7);
+					name[NAMEOFF + 4] = '\0';
 				}
 			}
 			return name;
@@ -298,16 +295,16 @@ static char * INITPROC root_dev_name(int dev)
 /*
  * Convert a /dev/ name to device number.
  */
-static int INITPROC parse_dev(char * line)
+static int INITPROC parse_dev(char *line)
 {
 	int base = 0;
 	struct dev_name_struct *dev = devices;
 
-	if (strncmp(line,"/dev/",5) == 0)
+	if (strncmp(line, "/dev/", 5) == 0)
 		line += 5;
 	do {
 		int len = strlen(dev->name);
-		if (strncmp(line,dev->name,len) == 0) {
+		if (strncmp(line, dev->name, len) == 0) {
 			line += len;
 			base = dev->num;
 			break;
@@ -324,15 +321,17 @@ static void INITPROC comirq(char *line)
 	char *l, *m, c;
 
 	l = line;
-	for (i = 0; i < MAX_SERIAL; i++) {	/* assume decimal digits only */
+	for (i = 0; i < MAX_SERIAL; i++) { /* assume decimal digits only */
 		m = l;
-		while ((*l) && (*l != ',')) l++;
-		c = *l;		/* ensure robust eol handling */
+		while ((*l) && (*l != ','))
+			l++;
+		c = *l; /* ensure robust eol handling */
 		if (l > m) {
 			*l = '\0';
 			set_serial_irq(i, (int)simple_strtol(m, 0));
 		}
-		if (!c) break;
+		if (!c)
+			break;
 		l++;
 	}
 #endif
@@ -340,34 +339,34 @@ static void INITPROC comirq(char *line)
 
 static void INITPROC parse_nic(char *line, struct netif_parms *parms)
 {
-    char *p;
+	char *p;
 
-    parms->irq = (int)simple_strtol(line, 0);
-    if ((p = strchr(line, ','))) {
-        parms->port = (int)simple_strtol(p+1, 16);
-        if ((p = strchr(p+1, ','))) {
-            parms->ram = (int)simple_strtol(p+1, 16);
-            if ((p = strchr(p+1, ',')))
-                parms->flags = (int)simple_strtol(p+1, 0);
-        }
-    }
+	parms->irq = (int)simple_strtol(line, 0);
+	if ((p = strchr(line, ','))) {
+		parms->port = (int)simple_strtol(p + 1, 16);
+		if ((p = strchr(p + 1, ','))) {
+			parms->ram = (int)simple_strtol(p + 1, 16);
+			if ((p = strchr(p + 1, ',')))
+				parms->flags = (int)simple_strtol(p + 1, 0);
+		}
+	}
 }
 
 static void INITPROC parse_umb(char *line)
 {
-	char *p = line-1; /* because we start reading at p+1 */
+	char *p = line - 1; /* because we start reading at p+1 */
 	seg_t base, end;
 	segext_t len;
 
 	do {
-		base = (seg_t)simple_strtol(p+1, 16);
-		if((p = strchr(p+1, ':'))) {
-			len = (segext_t)simple_strtol(p+1, 16);
+		base = (seg_t)simple_strtol(p + 1, 16);
+		if ((p = strchr(p + 1, ':'))) {
+			len = (segext_t)simple_strtol(p + 1, 16);
 			end = base + len;
 			debug("umb segment from %x to %x\n", base, end);
 			seg_add(base, end);
 		}
-	} while((p = strchr(p+1, ',')));
+	} while ((p = strchr(p + 1, ',')));
 }
 
 /*
@@ -389,35 +388,37 @@ static int INITPROC parse_options(void)
 
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 	/* check file starts with ## and max len 511 bytes*/
-	if (*(unsigned short *)options != 0x2323 || options[OPTSEGSZ-1])
+	if (*(unsigned short *)options != 0x2323 || options[OPTSEGSZ - 1])
 		return 0;
 
 	next = line;
 	while ((line = next) != NULL && *line) {
 		if ((next = option(line)) != NULL) {
-			if (*line == '#') {	/* skip line after comment char*/
+			if (*line == '#') { /* skip line after comment char*/
 				next = line;
 				while (*next != '\n' && *next != '\0')
 					next++;
 				continue;
-			} else *next++ = 0;
+			} else
+				*next++ = 0;
 		}
-		if (*line == 0)		/* skip spaces and linefeeds*/
+		if (*line == 0) /* skip spaces and linefeeds*/
 			continue;
 		debug("'%s',", line);
 		/*
 		 * check for kernel options first..
 		 */
-		if (!strncmp(line,"root=",5)) {
-			int dev = parse_dev(line+5);
-			debug("root %s=%D\n", line+5, dev);
+		if (!strncmp(line, "root=", 5)) {
+			int dev = parse_dev(line + 5);
+			debug("root %s=%D\n", line + 5, dev);
 			ROOT_DEV = (kdev_t)dev;
-			boot_rootdev = dev;    /* stop translation in device_setup*/
+			boot_rootdev =
+				dev; /* stop translation in device_setup*/
 			continue;
 		}
-		if (!strncmp(line,"console=",8)) {
-			int dev = parse_dev(line+8);
-			char *p = strchr(line+8, ',');
+		if (!strncmp(line, "console=", 8)) {
+			int dev = parse_dev(line + 8);
+			char *p = strchr(line + 8, ',');
 			if (p) {
 				*p++ = 0;
 #ifdef CONFIG_CHAR_DEV_RS
@@ -426,77 +427,76 @@ static int INITPROC parse_options(void)
 #endif
 			}
 
-
-			debug("console %s=%D,", line+8, dev);
+			debug("console %s=%D,", line + 8, dev);
 			boot_console = dev;
 			continue;
 		}
-		if (!strcmp(line,"ro")) {
+		if (!strcmp(line, "ro")) {
 			root_mountflags |= MS_RDONLY;
 			continue;
 		}
-		if (!strcmp(line,"rw")) {
+		if (!strcmp(line, "rw")) {
 			root_mountflags &= ~MS_RDONLY;
 			continue;
 		}
-		if (!strcmp(line,"debug")) {
+		if (!strcmp(line, "debug")) {
 			dprintk_on = 1;
 			continue;
 		}
-		if (!strcmp(line,"strace")) {
+		if (!strcmp(line, "strace")) {
 			tracing |= TRACE_STRACE;
 			continue;
 		}
-		if (!strcmp(line,"kstack")) {
+		if (!strcmp(line, "kstack")) {
 			tracing |= TRACE_KSTACK;
 			continue;
 		}
-		if (!strncmp(line,"init=",5)) {
+		if (!strncmp(line, "init=", 5)) {
 			line += 5;
 			init_command = argv_init[1] = line;
 			continue;
 		}
-		if (!strncmp(line,"ne0=",4)) {
-			parse_nic(line+4, &netif_parms[ETH_NE2K]);
+		if (!strncmp(line, "ne0=", 4)) {
+			parse_nic(line + 4, &netif_parms[ETH_NE2K]);
 			continue;
 		}
-		if (!strncmp(line,"wd0=",4)) {
-			parse_nic(line+4, &netif_parms[ETH_WD]);
+		if (!strncmp(line, "wd0=", 4)) {
+			parse_nic(line + 4, &netif_parms[ETH_WD]);
 			continue;
 		}
-		if (!strncmp(line,"3c0=",4)) {
-			parse_nic(line+4, &netif_parms[ETH_EL3]);
+		if (!strncmp(line, "3c0=", 4)) {
+			parse_nic(line + 4, &netif_parms[ETH_EL3]);
 			continue;
 		}
-		if (!strncmp(line,"buf=",4)) {
-			nr_ext_bufs = (int)simple_strtol(line+4, 10);
+		if (!strncmp(line, "buf=", 4)) {
+			nr_ext_bufs = (int)simple_strtol(line + 4, 10);
 			continue;
 		}
-		if (!strncmp(line,"xmsbuf=",7)) {
-			nr_xms_bufs = (int)simple_strtol(line+7, 10);
+		if (!strncmp(line, "xmsbuf=", 7)) {
+			nr_xms_bufs = (int)simple_strtol(line + 7, 10);
 			continue;
 		}
-		if (!strncmp(line,"cache=",6)) {
-			nr_map_bufs = (int)simple_strtol(line+6, 10);
+		if (!strncmp(line, "cache=", 6)) {
+			nr_map_bufs = (int)simple_strtol(line + 6, 10);
 			continue;
 		}
-		if (!strncmp(line,"comirq=",7)) {
-			comirq(line+7);
+		if (!strncmp(line, "comirq=", 7)) {
+			comirq(line + 7);
 			continue;
 		}
-		if (!strncmp(line,"umb=",4)) {
-			parse_umb(line+4);
+		if (!strncmp(line, "umb=", 4)) {
+			parse_umb(line + 4);
 			continue;
 		}
-		if (!strncmp(line,"TZ=",3)) {
-			tz_init(line+3);
+		if (!strncmp(line, "TZ=", 3)) {
+			tz_init(line + 3);
 			/* fall through and add line to environment */
 		}
-		
+
 		/*
 		 * Then check if it's an environment variable or an init argument.
 		 */
-		if (!strchr(line,'=')) {    /* no '=' means init argument*/
+		if (!strchr(line, '=')) { /* no '=' means init argument*/
 			if (args >= MAX_INIT_ARGS)
 				break;
 			argv_init[args++] = line;
@@ -510,7 +510,7 @@ static int INITPROC parse_options(void)
 #endif
 	}
 	debug("\n");
-	return 1;	/* success*/
+	return 1; /* success*/
 }
 
 static void INITPROC finalize_options(void)
@@ -523,13 +523,13 @@ static void INITPROC finalize_options(void)
 
 #if DEBUG
 	printk("args: ");
-	for (i=1; i<args; i++)
+	for (i = 1; i < args; i++)
 		printk("'%s'", argv_init[i]);
 	printk("\n");
 
 #if ENV
 	printk("envp: ");
-	for (i=0; i<envs; i++)
+	for (i = 0; i < envs; i++)
 		printk("'%s'", envp_init[i]);
 	printk("\n");
 #endif
@@ -537,26 +537,26 @@ static void INITPROC finalize_options(void)
 
 	/* convert argv array to stack array for sys_execv*/
 	args--;
-	argv_init[0] = (char *)args;        	/* 0 = argc*/
-	char *q = (char *)&argv_init[args+2+envs+1];
-	for (i=1; i<=args; i++) {                   /* 1..argc = av*/
+	argv_init[0] = (char *)args; /* 0 = argc*/
+	char *q = (char *)&argv_init[args + 2 + envs + 1];
+	for (i = 1; i <= args; i++) { /* 1..argc = av*/
 		char *p = argv_init[i];
 		char *savq = q;
 		while ((*q++ = *p++) != 0)
 			;
 		argv_init[i] = (char *)(savq - (char *)argv_init);
 	}
-	/*argv_init[args+1] = NULL;*/               /* argc+1 = 0*/
+	/*argv_init[args+1] = NULL;*/ /* argc+1 = 0*/
 #if ENV
 	if (envs) {
-		for (i=0; i<envs; i++) {
+		for (i = 0; i < envs; i++) {
 			char *p = envp_init[i];
 			char *savq = q;
 			while ((*q++ = *p++) != 0)
 				;
-			argv_init[args+2+i] = (char *)(savq - (char *)argv_init);
+			argv_init[args + 2 + i] =
+				(char *)(savq - (char *)argv_init);
 		}
-
 	}
 #endif
 	/*argv_init[args+2+envs] = NULL;*/
@@ -564,12 +564,12 @@ static void INITPROC finalize_options(void)
 }
 
 /* return whitespace-delimited string*/
-static char * INITPROC option(char *s)
+static char *INITPROC option(char *s)
 {
 	char *t = s;
 	if (*s == '#')
 		return s;
-	for(; *s != ' ' && *s != '\t' && *s != '\n'; ++s, ++t) {
+	for (; *s != ' ' && *s != '\t' && *s != '\n'; ++s, ++t) {
 		if (*s == '\0')
 			return NULL;
 		if (*s == '"') {

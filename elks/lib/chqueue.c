@@ -29,102 +29,103 @@
 
 void chq_init(register struct ch_queue *q, unsigned char *buf, int size)
 {
-    debug("CHQ: chq_init(%d, %d, %d)\n", q, buf, size);
-    q->base = buf;
-    q->size = size;
-    q->len = q->head = q->tail = 0;
+	debug("CHQ: chq_init(%d, %d, %d)\n", q, buf, size);
+	q->base = buf;
+	q->size = size;
+	q->len = q->head = q->tail = 0;
 }
 
 int chq_wait_wr(register struct ch_queue *q, int nonblock)
 {
-    if (q->len == q->size) {
-	if (nonblock)
-	    return -EAGAIN;
-	else {
-	    interruptible_sleep_on(&q->wait);
-	    if (q->len == q->size)
-		return -EINTR;
+	if (q->len == q->size) {
+		if (nonblock)
+			return -EAGAIN;
+		else {
+			interruptible_sleep_on(&q->wait);
+			if (q->len == q->size)
+				return -EINTR;
+		}
 	}
-    }
-    return 0;
+	return 0;
 }
 
 /* Adds character c if there is room (or otherwise throws out new char) */
 void chq_addch(register struct ch_queue *q, unsigned char c)
 {
-    debug("CHQ: chq_addch(%d, %c) q->len=%d q->head=%d\n", q, c,
-	   q->len, q->head);
+	debug("CHQ: chq_addch(%d, %c) q->len=%d q->head=%d\n", q, c, q->len,
+	      q->head);
 
-    clr_irq();
-    if (q->len < q->size) {
-	q->base[q->head] = c;
-	if (++q->head >= q->size)
-	    q->head = 0;
-	q->len++;
-	set_irq();
-	wake_up(&q->wait);
-    } else set_irq();
+	clr_irq();
+	if (q->len < q->size) {
+		q->base[q->head] = c;
+		if (++q->head >= q->size)
+			q->head = 0;
+		q->len++;
+		set_irq();
+		wake_up(&q->wait);
+	} else
+		set_irq();
 }
 
 void chq_addch_nowakeup(register struct ch_queue *q, unsigned char c)
 {
-    clr_irq();
-    if (q->len < q->size) {
-	q->base[q->head] = c;
-	if (++q->head >= q->size)
-	    q->head = 0;
-	q->len++;
-    }
-    set_irq();
+	clr_irq();
+	if (q->len < q->size) {
+		q->base[q->head] = c;
+		if (++q->head >= q->size)
+			q->head = 0;
+		q->len++;
+	}
+	set_irq();
 }
 
 int chq_wait_rd(register struct ch_queue *q, int nonblock)
 {
-    int	res = 0;
+	int res = 0;
 
-    prepare_to_wait_interruptible(&q->wait);
-    if (!q->len) {
-	if (nonblock)
-	    res = -EAGAIN;
-	else {
-	    do_wait();
-	    if (!q->len)
-		res = -EINTR;
+	prepare_to_wait_interruptible(&q->wait);
+	if (!q->len) {
+		if (nonblock)
+			res = -EAGAIN;
+		else {
+			do_wait();
+			if (!q->len)
+				res = -EINTR;
+		}
 	}
-    }
-    finish_wait(&q->wait);
-    return res;
+	finish_wait(&q->wait);
+	return res;
 }
 
 /* Return first character in queue*/
 int chq_getch(register struct ch_queue *q)
 {
-    int retval;
+	int retval;
 
-    debug("CHQ: chq_getch(%d) q->len=%d q->head=%d q->size=%d\n",
-	   q, q->len, q->head, q->size);
+	debug("CHQ: chq_getch(%d) q->len=%d q->head=%d q->size=%d\n", q, q->len,
+	      q->head, q->size);
 
-    if (!q->len)
-	return -EAGAIN;
-    else {
-	clr_irq();
-	retval = q->base[q->tail];
-	if (++q->tail >= q->size)
-	    q->tail = 0;
-	q->len--;
-	set_irq();
-    }
-    return retval;
+	if (!q->len)
+		return -EAGAIN;
+	else {
+		clr_irq();
+		retval = q->base[q->tail];
+		if (++q->tail >= q->size)
+			q->tail = 0;
+		q->len--;
+		set_irq();
+	}
+	return retval;
 }
 
 int chq_peekch(struct ch_queue *q)
 {
-    return (q->len != 0);
+	return (q->len != 0);
 }
 
 #if UNUSED
 int chq_full(register struct ch_queue *q)
 {
-    return (q->len == q->size);
+	return (q->len == q->size);
 }
 #endif
