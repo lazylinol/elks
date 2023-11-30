@@ -42,71 +42,66 @@
  */
 
 struct dma_chan {
-    int lock;
-    const char *device_id;
+	int lock;
+	const char *device_id;
 };
 
 static struct dma_chan dma_chan_busy[MAX_DMA_CHANNELS] = {
-    {0, 0},
-    {0, 0},
-    {0, 0},
-    {0, 0},
-    {1, "cascade"},
-    {0, 0},
-    {0, 0},
-    {0, 0}
+	{ 0, 0 },	  { 0, 0 }, { 0, 0 }, { 0, 0 },
+	{ 1, "cascade" }, { 0, 0 }, { 0, 0 }, { 0, 0 }
 };
 
-#define xchg(op, arg) \
-( {			   \
-	typeof(arg) __ret; \
-	__ret = *op;	   \
-	*op = arg;	   \
-	__ret;		   \
-} )
+#define xchg(op, arg)              \
+	({                         \
+		typeof(arg) __ret; \
+		__ret = *op;       \
+		*op = arg;         \
+		__ret;             \
+	})
 
 int request_dma(unsigned char dma, const char *device)
 {
-    if (dma >= MAX_DMA_CHANNELS)
-	return -EINVAL;
+	if (dma >= MAX_DMA_CHANNELS)
+		return -EINVAL;
 
-    if (xchg(&dma_chan_busy[dma].lock, 1) != 0)
-	return -EBUSY;
+	if (xchg(&dma_chan_busy[dma].lock, 1) != 0)
+		return -EBUSY;
 
-    dma_chan_busy[dma].device_id = device;
+	dma_chan_busy[dma].device_id = device;
 
-    /* old flag was 0, now contains 1 to indicate busy */
-    return 0;
-}				/* request_dma */
+	/* old flag was 0, now contains 1 to indicate busy */
+	return 0;
+} /* request_dma */
 
 void free_dma(unsigned char dma)
 {
-    if (dma >= MAX_DMA_CHANNELS)
-	debug("Trying to free DMA%u\n", dma);
-    else if (!xchg(&dma_chan_busy[dma].lock, 0)) {
-	printk("Trying to free free DMA%u\n", dma);
-} }				/* free_dma */
+	if (dma >= MAX_DMA_CHANNELS)
+		debug("Trying to free DMA%u\n", dma);
+	else if (!xchg(&dma_chan_busy[dma].lock, 0)) {
+		printk("Trying to free free DMA%u\n", dma);
+	}
+} /* free_dma */
 
 /* enable/disable a specific DMA channel */
 
 void enable_dma(unsigned char dma)
 {
-    if (dma >= MAX_DMA_CHANNELS)
-	debug("Trying to enable DMA%u\n", dma);
-    else if (dma <= 3)
-	dma_outb(dma, DMA1_MASK_REG);
-    else
-	dma_outb(dma & 3, DMA2_MASK_REG);
+	if (dma >= MAX_DMA_CHANNELS)
+		debug("Trying to enable DMA%u\n", dma);
+	else if (dma <= 3)
+		dma_outb(dma, DMA1_MASK_REG);
+	else
+		dma_outb(dma & 3, DMA2_MASK_REG);
 }
 
 void disable_dma(unsigned char dma)
 {
-    if (dma >= MAX_DMA_CHANNELS)
-	debug("Trying to disable DMA%u\n", dma);
-    else if (dma <= 3)
-	dma_outb(dma | 4, DMA1_MASK_REG);
-    else
-	dma_outb((dma & 3) | 4, DMA2_MASK_REG);
+	if (dma >= MAX_DMA_CHANNELS)
+		debug("Trying to disable DMA%u\n", dma);
+	else if (dma <= 3)
+		dma_outb(dma | 4, DMA1_MASK_REG);
+	else
+		dma_outb((dma & 3) | 4, DMA2_MASK_REG);
 }
 
 /* Clear the 'DMA Pointer Flip Flop'.
@@ -119,24 +114,24 @@ void disable_dma(unsigned char dma)
 
 void clear_dma_ff(unsigned char dma)
 {
-    if (dma >= MAX_DMA_CHANNELS)
-	debug("Trying to disable DMA%u\n", dma);
-    else if (dma <= 3)
-	dma_outb(0, DMA1_CLEAR_FF_REG);
-    else
-	dma_outb(0, DMA2_CLEAR_FF_REG);
+	if (dma >= MAX_DMA_CHANNELS)
+		debug("Trying to disable DMA%u\n", dma);
+	else if (dma <= 3)
+		dma_outb(0, DMA1_CLEAR_FF_REG);
+	else
+		dma_outb(0, DMA2_CLEAR_FF_REG);
 }
 
 /* set mode (above) for a specific DMA channel */
 
 void set_dma_mode(unsigned char dma, unsigned char mode)
 {
-    if (dma >= MAX_DMA_CHANNELS)
-	debug("Trying to disable DMA%u\n", dma);
-    else if (dma <= 3)
-	dma_outb(mode | dma, DMA1_MODE_REG);
-    else
-	dma_outb(mode | (dma & 3), DMA2_MODE_REG);
+	if (dma >= MAX_DMA_CHANNELS)
+		debug("Trying to disable DMA%u\n", dma);
+	else if (dma <= 3)
+		dma_outb(mode | dma, DMA1_MODE_REG);
+	else
+		dma_outb(mode | (dma & 3), DMA2_MODE_REG);
 }
 
 /* Set only the page register bits of the transfer address.
@@ -147,29 +142,29 @@ void set_dma_mode(unsigned char dma, unsigned char mode)
 
 void set_dma_page(unsigned char dma, unsigned char page)
 {
-    switch (dma) {
-    case 0:
-	dma_outb(page, DMA_PAGE_0);
-	break;
-    case 1:
-	dma_outb(page, DMA_PAGE_1);
-	break;
-    case 2:
-	dma_outb(page, DMA_PAGE_2);
-	break;
-    case 3:
-	dma_outb(page, DMA_PAGE_3);
-	break;
-    case 5:
-	dma_outb(page & 0xfe, DMA_PAGE_5);
-	break;
-    case 6:
-	dma_outb(page & 0xfe, DMA_PAGE_6);
-	break;
-    case 7:
-	dma_outb(page & 0xfe, DMA_PAGE_7);
-	break;
-    }
+	switch (dma) {
+	case 0:
+		dma_outb(page, DMA_PAGE_0);
+		break;
+	case 1:
+		dma_outb(page, DMA_PAGE_1);
+		break;
+	case 2:
+		dma_outb(page, DMA_PAGE_2);
+		break;
+	case 3:
+		dma_outb(page, DMA_PAGE_3);
+		break;
+	case 5:
+		dma_outb(page & 0xfe, DMA_PAGE_5);
+		break;
+	case 6:
+		dma_outb(page & 0xfe, DMA_PAGE_6);
+		break;
+	case 7:
+		dma_outb(page & 0xfe, DMA_PAGE_7);
+		break;
+	}
 }
 
 /* Set transfer address & page bits for specific DMA channel.
@@ -178,14 +173,14 @@ void set_dma_page(unsigned char dma, unsigned char page)
 
 void set_dma_addr(unsigned char dma, unsigned long addr)
 {
-    set_dma_page(dma, (long)addr >> 16);
-    if (dma <= 3) {
-	dma_outb(addr & 0xff, (dma << 1) + IO_DMA1_BASE);
-	dma_outb((addr >> 8) & 0xff, (dma << 1) + IO_DMA1_BASE);
-    } else {
-	dma_outb((addr >> 1) & 0xff, ((dma & 3) << 2) + IO_DMA2_BASE);
-	dma_outb((addr >> 9) & 0xff, ((dma & 3) << 2) + IO_DMA2_BASE);
-    }
+	set_dma_page(dma, (long)addr >> 16);
+	if (dma <= 3) {
+		dma_outb(addr & 0xff, (dma << 1) + IO_DMA1_BASE);
+		dma_outb((addr >> 8) & 0xff, (dma << 1) + IO_DMA1_BASE);
+	} else {
+		dma_outb((addr >> 1) & 0xff, ((dma & 3) << 2) + IO_DMA2_BASE);
+		dma_outb((addr >> 9) & 0xff, ((dma & 3) << 2) + IO_DMA2_BASE);
+	}
 }
 
 /* Set transfer size (max 64k for DMA1..3, 128k for DMA5..7) for
@@ -199,14 +194,16 @@ void set_dma_addr(unsigned char dma, unsigned long addr)
 
 void set_dma_count(unsigned char dma, unsigned int count)
 {
-    count--;
-    if (dma <= 3) {
-	dma_outb(count & 0xff, (dma << 1) + 1 + IO_DMA1_BASE);
-	dma_outb((count >> 8) & 0xff, (dma << 1) + 1 + IO_DMA1_BASE);
-    } else {
-	dma_outb((count >> 1) & 0xff, ((dma & 3) << 2) + 2 + IO_DMA2_BASE);
-	dma_outb((count >> 9) & 0xff, ((dma & 3) << 2) + 2 + IO_DMA2_BASE);
-    }
+	count--;
+	if (dma <= 3) {
+		dma_outb(count & 0xff, (dma << 1) + 1 + IO_DMA1_BASE);
+		dma_outb((count >> 8) & 0xff, (dma << 1) + 1 + IO_DMA1_BASE);
+	} else {
+		dma_outb((count >> 1) & 0xff,
+			 ((dma & 3) << 2) + 2 + IO_DMA2_BASE);
+		dma_outb((count >> 9) & 0xff,
+			 ((dma & 3) << 2) + 2 + IO_DMA2_BASE);
+	}
 }
 
 #if UNUSED
@@ -221,25 +218,26 @@ void set_dma_count(unsigned char dma, unsigned int count)
 
 int get_dma_residue(unsigned char dma)
 {
-    unsigned int io_port = (dma <= 3) ? (dma << 1) + 1 + IO_DMA1_BASE
-				      : ((dma & 3) << 2) + 2 + IO_DMA2_BASE;
+	unsigned int io_port = (dma <= 3) ? (dma << 1) + 1 + IO_DMA1_BASE :
+						  ((dma & 3) << 2) + 2 + IO_DMA2_BASE;
 
-    /* using short to get 16-bit wrap around */
-    unsigned short count = 1 + dma_inb(io_port);
+	/* using short to get 16-bit wrap around */
+	unsigned short count = 1 + dma_inb(io_port);
 
-    count += dma_inb(io_port) << 8;
+	count += dma_inb(io_port) << 8;
 
-    return (dma <= 3) ? count : (count << 1);
+	return (dma <= 3) ? count : (count << 1);
 }
 
 int get_dma_list(char *buf)
 {
-    int i, len = 0;
+	int i, len = 0;
 
-    for (i = 0; i < MAX_DMA_CHANNELS; i++)
-	if (dma_chan_busy[i].lock)
-	    len += sprintf(buf + len, "%2d: %s\n", i, dma_chan_busy[i].device_id);
-    return len;
+	for (i = 0; i < MAX_DMA_CHANNELS; i++)
+		if (dma_chan_busy[i].lock)
+			len += sprintf(buf + len, "%2d: %s\n", i,
+				       dma_chan_busy[i].device_id);
+	return len;
 }
 #endif
 

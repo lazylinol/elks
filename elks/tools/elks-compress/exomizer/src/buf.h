@@ -32,15 +32,18 @@ extern "C" {
  */
 #include <stdio.h>
 #ifndef __GNUC__
-#define  __attribute__(x)  /*NOTHING*/
+#define __attribute__(x) /*NOTHING*/
 #endif
 
-#define STATIC_BUF_INIT {0, 0, 0}
+#define STATIC_BUF_INIT \
+	{               \
+		0, 0, 0 \
+	}
 
 struct buf {
-    void *data;
-    int size;
-    int capacity;
+	void *data;
+	int size;
+	int capacity;
 };
 
 void buf_init(struct buf *b);
@@ -124,23 +127,23 @@ void *buf_replace(struct buf *b, int b_off, int b_n, const void *m, int m_n);
  * invalidate previously fetched internal buffer pointers.  Returns a
  * pointer to the replaces area in the internal buffer like a buf_data
  * call. */
-void *buf_freplace(struct buf *b, int b_off, int b_n,
-                   FILE *f, int f_off, int f_n);
+void *buf_freplace(struct buf *b, int b_off, int b_n, FILE *f, int f_off,
+		   int f_n);
 
 /**
  * Creates a read only view into another buf starting at the given
  * offset and being of the given size. The view buf will not take
  * ownership of the data and is not to be freed.
  */
-const struct buf *buf_view(struct buf *v,
-                           const struct buf *b, int b_off, int b_n);
+const struct buf *buf_view(struct buf *v, const struct buf *b, int b_off,
+			   int b_n);
 
 /* Prints formatted to the end of the buffer using the vsnsprintf
  * function. Will place a zero byte string terminator in the
  * position directly following the end of the buffer to make it
  * printf-able. */
 void buf_printf(struct buf *b, const char *format, ...)
-    __attribute__((format(printf,2,3)));
+	__attribute__((format(printf, 2, 3)));
 
 #ifdef __cplusplus
 }

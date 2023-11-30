@@ -37,10 +37,9 @@
 
 #endif /* CONFIG_TRACE */
 
-
 /* internal flags for kernel */
-#define TRACE_STRACE    0x01    /* system call tracing enabled */
-#define TRACE_KSTACK    0x02    /* calculate kernel stack used per syscall/process */
+#define TRACE_STRACE 0x01 /* system call tracing enabled */
+#define TRACE_KSTACK 0x02 /* calculate kernel stack used per syscall/process */
 
 #ifndef __ASSEMBLER__
 extern int tracing;

@@ -19,15 +19,15 @@
 #define DIRECTHD_DRIVE1 0xb0
 
 /* define drive commands */
-#define DIRECTHD_DRIVE_ID 0xec	/* drive id */
-#define DIRECTHD_READ 0x20	/* read with retry */
-#define DIRECTHD_WRITE 0x30	/* write with retry */
+#define DIRECTHD_DRIVE_ID 0xec /* drive id */
+#define DIRECTHD_READ 0x20     /* read with retry */
+#define DIRECTHD_WRITE 0x30    /* write with retry */
 
 /* other definitions */
-#define MAX_DRIVES 4		/* 2 per i/o channel and 2 i/o channels */
+#define MAX_DRIVES 4 /* 2 per i/o channel and 2 i/o channels */
 
 #if 0
-#define DIRECTHD_DEVICE_NAME	"dhd"
+#define DIRECTHD_DEVICE_NAME "dhd"
 #endif
 
 #endif

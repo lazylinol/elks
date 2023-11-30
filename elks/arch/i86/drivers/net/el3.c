@@ -20,11 +20,11 @@
 #include <linuxmt/major.h>
 #include <linuxmt/ioctl.h>
 #include <linuxmt/fcntl.h>
-#include <linuxmt/fs.h>  
+#include <linuxmt/fs.h>
 #include <linuxmt/sched.h>
 #include <linuxmt/limits.h>
-#include <linuxmt/mm.h>  
-#include <linuxmt/debug.h> 
+#include <linuxmt/mm.h>
+#include <linuxmt/debug.h>
 #include <linuxmt/netstat.h>
 #include <netinet/in.h>
 #include "eth-msgs.h"
@@ -33,62 +33,85 @@
 #define EL3_DATA 0x00
 #define EL3_CMD 0x0eU
 #define EL3_STATUS 0x0eU
-#define	EEPROM_READ 0x80U
+#define EEPROM_READ 0x80U
 
 #define EL3WINDOW(win_num) outw(SelectWindow + (win_num), ioaddr + EL3_CMD)
-
 
 /* The top five bits written to EL3_CMD are a command, the lower
    11 bits are the parameter, if applicable. */
 enum c509cmd {
-	TotalReset = 0<<11, SelectWindow = 1<<11, StartCoax = 2<<11,
-	RxDisable = 3<<11, RxEnable = 4<<11, RxReset = 5<<11, RxDiscard = 8<<11,
-	TxEnable = 9<<11, TxDisable = 10<<11, TxReset = 11<<11,
-	FakeIntr = 12<<11, AckIntr = 13<<11, SetIntrEnb = 14<<11,
-	IntStatusEnb = 15<<11, SetRxFilter = 16<<11, SetRxThreshold = 17<<11,
-	SetTxThreshold = 18<<11, SetTxStart = 19<<11, StatsEnable = 21<<11,
-	StatsDisable = 22<<11, StopCoax = 23<<11, PowerUp = 27<<11,
-	PowerDown = 28<<11, PowerAuto = 29<<11};
+	TotalReset = 0 << 11,
+	SelectWindow = 1 << 11,
+	StartCoax = 2 << 11,
+	RxDisable = 3 << 11,
+	RxEnable = 4 << 11,
+	RxReset = 5 << 11,
+	RxDiscard = 8 << 11,
+	TxEnable = 9 << 11,
+	TxDisable = 10 << 11,
+	TxReset = 11 << 11,
+	FakeIntr = 12 << 11,
+	AckIntr = 13 << 11,
+	SetIntrEnb = 14 << 11,
+	IntStatusEnb = 15 << 11,
+	SetRxFilter = 16 << 11,
+	SetRxThreshold = 17 << 11,
+	SetTxThreshold = 18 << 11,
+	SetTxStart = 19 << 11,
+	StatsEnable = 21 << 11,
+	StatsDisable = 22 << 11,
+	StopCoax = 23 << 11,
+	PowerUp = 27 << 11,
+	PowerDown = 28 << 11,
+	PowerAuto = 29 << 11
+};
 
 enum c509status {
-	IntLatch = 0x0001U, AdapterFailure = 0x0002U, TxComplete = 0x0004U,
-	TxAvailable = 0x0008U, RxComplete = 0x0010U, RxEarly = 0x0020U,
-	IntReq = 0x0040U, StatsFull = 0x0080U, CmdBusy = 0x1000U, };
+	IntLatch = 0x0001U,
+	AdapterFailure = 0x0002U,
+	TxComplete = 0x0004U,
+	TxAvailable = 0x0008U,
+	RxComplete = 0x0010U,
+	RxEarly = 0x0020U,
+	IntReq = 0x0040U,
+	StatsFull = 0x0080U,
+	CmdBusy = 0x1000U,
+};
 
-static int active_imask = IntLatch|RxComplete|TxAvailable|TxComplete|AdapterFailure|StatsFull;
+static int active_imask = IntLatch | RxComplete | TxAvailable | TxComplete |
+			  AdapterFailure | StatsFull;
 
 /* The SetRxFilter command accepts the following classes: */
-enum RxFilter {
-	RxStation = 1, RxMulticast = 2, RxBroadcast = 4, RxProm = 8 };
+enum RxFilter { RxStation = 1, RxMulticast = 2, RxBroadcast = 4, RxProm = 8 };
 
 /* Register window 1 offsets, the window used in normal operation. */
-#define TX_FIFO		0x00U
-#define RX_FIFO		0x00U
-#define RX_STATUS 	0x08U
-#define TX_STATUS 	0x0BU
-#define TX_FREE		0x0CU		/* Remaining free bytes in Tx buffer. */
+#define TX_FIFO 0x00U
+#define RX_FIFO 0x00U
+#define RX_STATUS 0x08U
+#define TX_STATUS 0x0BU
+#define TX_FREE 0x0CU /* Remaining free bytes in Tx buffer. */
 
-#define WN0_CONF_CTRL	0x04U		/* Window 0: Configuration control register */
-#define WN0_ADDR_CONF	0x06U		/* Window 0: Address configuration register */
-#define WN0_IRQ		0x08U		/* Window 0: Set IRQ line in bits 12-15. */
-#define WN4_MEDIA	0x0AU		/* Window 4: Various transcvr/media bits. */
-#define	MEDIA_TP	0x00C0U		/* Enable link beat and jabber for 10baseT. */
-#define WN4_NETDIAG	0x06U		/* Window 4: Net diagnostic */
-#define FD_ENABLE	0x8000U		/* Enable full-duplex ("external loopback") */
-#define ENABLE_ADAPTER	0x1		/* Enable adapter (W0-conf-ctrl reg) */
+#define WN0_CONF_CTRL 0x04U /* Window 0: Configuration control register */
+#define WN0_ADDR_CONF 0x06U /* Window 0: Address configuration register */
+#define WN0_IRQ 0x08U	    /* Window 0: Set IRQ line in bits 12-15. */
+#define WN4_MEDIA 0x0AU	    /* Window 4: Various transcvr/media bits. */
+#define MEDIA_TP 0x00C0U    /* Enable link beat and jabber for 10baseT. */
+#define WN4_NETDIAG 0x06U   /* Window 4: Net diagnostic */
+#define FD_ENABLE 0x8000U   /* Enable full-duplex ("external loopback") */
+#define ENABLE_ADAPTER 0x1  /* Enable adapter (W0-conf-ctrl reg) */
 
-#define EEPROM_NODE_ADDR_0	0x0	/* Word */
-#define EEPROM_NODE_ADDR_1	0x1	/* Word */
-#define EEPROM_NODE_ADDR_2	0x2	/* Word */
-#define EEPROM_PROD_ID		0x3	/* 0x9[0-f]50 */
-#define EEPROM_MFG_ID		0x7	/* 0x6d50 */
-#define EEPROM_ADDR_CFG		0x8	/* Base addr */
-#define EEPROM_RESOURCE_CFG	0x9	/* IRQ. Bits 12-15 */
+#define EEPROM_NODE_ADDR_0 0x0	/* Word */
+#define EEPROM_NODE_ADDR_1 0x1	/* Word */
+#define EEPROM_NODE_ADDR_2 0x2	/* Word */
+#define EEPROM_PROD_ID 0x3	/* 0x9[0-f]50 */
+#define EEPROM_MFG_ID 0x7	/* 0x6d50 */
+#define EEPROM_ADDR_CFG 0x8	/* Base addr */
+#define EEPROM_RESOURCE_CFG 0x9 /* IRQ. Bits 12-15 */
 
-#define EP_ID_PORT_START 0x110  /* avoid 0x100 to avoid conflict with SB16 */
+#define EP_ID_PORT_START 0x110 /* avoid 0x100 to avoid conflict with SB16 */
 #define EP_ID_PORT_INC 0x10
 #define EP_ID_PORT_END 0x200
-#define EP_TAG_MAX		0x7 /* must be 2^n - 1 */
+#define EP_TAG_MAX 0x7 /* must be 2^n - 1 */
 
 static int INITPROC el3_isa_probe();
 //static word_t read_eeprom(int, int);
@@ -112,11 +135,11 @@ extern struct eth eths[];
 static int max_interrupt_work = 5;
 
 /* runtime configuration set in /bootopts or defaults in ports.h */
-#define net_irq     (netif_parms[ETH_EL3].irq)
-#define net_port    (netif_parms[ETH_EL3].port)
-#define net_ram     (netif_parms[ETH_EL3].ram)
-#define net_flags   (netif_parms[ETH_EL3].flags)
-static int ioaddr;	// FIXME  remove later
+#define net_irq (netif_parms[ETH_EL3].irq)
+#define net_port (netif_parms[ETH_EL3].port)
+#define net_ram (netif_parms[ETH_EL3].ram)
+#define net_flags (netif_parms[ETH_EL3].flags)
+static int ioaddr; // FIXME  remove later
 static word_t el3_id_port;
 static unsigned char found;
 
@@ -129,22 +152,17 @@ static unsigned char usecount;
 static struct wait_queue rxwait;
 static struct wait_queue txwait;
 
-struct file_operations el3_fops =
-{
-    NULL,	 /* lseek */
-    el3_read,
-    el3_write,
-    NULL,	 /* readdir */
-    el3_select,
-    el3_ioctl,
-    el3_open,
-    el3_release
+struct file_operations el3_fops = {
+	NULL,			     /* lseek */
+	el3_read,   el3_write, NULL, /* readdir */
+	el3_select, el3_ioctl, el3_open, el3_release
 };
 
-void INITPROC el3_drv_init(void) {
-	ioaddr = net_port;		// temporary
+void INITPROC el3_drv_init(void)
+{
+	ioaddr = net_port; // temporary
 
-	verbose = (net_flags&ETHF_VERBOSE);
+	verbose = (net_flags & ETHF_VERBOSE);
 	if (el3_isa_probe() == 0) {
 		found++;
 		eths[ETH_EL3].stats = &netif_stat;
@@ -153,14 +171,12 @@ void INITPROC el3_drv_init(void) {
 		EL3WINDOW(0);
 		outw(0x0f00, ioaddr + WN0_IRQ);
 	}
-
 }
 
-static int INITPROC el3_find_id_port ( void ) {
-
-	for ( el3_id_port = EP_ID_PORT_START ;
-	      el3_id_port < EP_ID_PORT_END ;
-	      el3_id_port += EP_ID_PORT_INC ) {
+static int INITPROC el3_find_id_port(void)
+{
+	for (el3_id_port = EP_ID_PORT_START; el3_id_port < EP_ID_PORT_END;
+	     el3_id_port += EP_ID_PORT_INC) {
 		outb(0, el3_id_port);
 		/* See if anything's listening */
 		outb(0xff, el3_id_port);
@@ -176,7 +192,7 @@ static int INITPROC el3_find_id_port ( void ) {
 }
 
 /* Return 0 on success, 1 on error */
-static int INITPROC el3_isa_probe( void )
+static int INITPROC el3_isa_probe(void)
 {
 	short lrs_state = 0xff;
 	int i;
@@ -189,19 +205,20 @@ static int INITPROC el3_isa_probe( void )
 	   respond to subsequent ID sequences.
 	   ELKS supports only one card, comment kept for future reference. HS */
 
-	if (el3_find_id_port()) return 1;
+	if (el3_find_id_port())
+		return 1;
 
 	outb(0x00, el3_id_port);
-	outb(0x00, el3_id_port);	// just wait ...
+	outb(0x00, el3_id_port); // just wait ...
 	for (i = 0; i < 255; i++) {
 		outb(lrs_state, el3_id_port);
 		lrs_state <<= 1;
 		lrs_state = lrs_state & 0x100 ? lrs_state ^ 0xcf : lrs_state;
 	}
-	outb(0xd0, el3_id_port);	// Set tag
+	outb(0xd0, el3_id_port); // Set tag
 
-	outb(0xd0, el3_id_port);		// select tag (0)
-	outb(0xe0 |(ioaddr >> 4), el3_id_port );// Set IOBASE address, activate
+	outb(0xd0, el3_id_port);		 // select tag (0)
+	outb(0xe0 | (ioaddr >> 4), el3_id_port); // Set IOBASE address, activate
 	printk("eth: %s at %x, irq %d", dev_name, ioaddr, net_irq);
 
 	if (id_read_eeprom(EEPROM_MFG_ID) != 0x6d50) {
@@ -212,15 +229,18 @@ static int INITPROC el3_isa_probe( void )
 	 * 3Com got the byte order backwards in the EEPROM. */
 	for (i = 0; i < 3; i++)
 		mac[i] = htons(id_read_eeprom(i));
-	printk(", (%s) MAC %02x", model_name, (mac_addr[0]&0xff));
+	printk(", (%s) MAC %02x", model_name, (mac_addr[0] & 0xff));
 	i = 1;
-	while (i < 6) printk(":%02x", (mac_addr[i++]&0xff));
+	while (i < 6)
+		printk(":%02x", (mac_addr[i++] & 0xff));
 
 	int iobase = id_read_eeprom(EEPROM_ADDR_CFG);
 	//int if_port = iobase >> 14;
-	if (verbose) printk(" (HWconf: %x/%d)", (0x200 + ((iobase & 0x1f) << 4)), (id_read_eeprom(9) >> 12));
+	if (verbose)
+		printk(" (HWconf: %x/%d)", (0x200 + ((iobase & 0x1f) << 4)),
+		       (id_read_eeprom(9) >> 12));
 	printk(", flags 0x%x\n", net_flags);
-	
+
 	return 0;
 }
 
@@ -259,16 +279,18 @@ static word_t id_read_eeprom(int index)
 	return word;
 }
 
-static size_t el3_write(struct inode *inode, struct file *file, char *data, size_t len)
+static size_t el3_write(struct inode *inode, struct file *file, char *data,
+			size_t len)
 {
 	int res;
 
 	while (1) {
-
 		prepare_to_wait_interruptible(&txwait);
 
-		if (len > MAX_PACKET_ETH) len = MAX_PACKET_ETH;
-		if (len < 64) len = 64;
+		if (len > MAX_PACKET_ETH)
+			len = MAX_PACKET_ETH;
+		if (len < 64)
+			len = 64;
 
 		if (inw(ioaddr + TX_FREE) < (len + 4)) {
 			// NO space in FIFO, wait
@@ -284,9 +306,9 @@ static size_t el3_write(struct inode *inode, struct file *file, char *data, size
 		}
 		//printk("T");
 		//printk("T%d^", len);
-		
-		outw(SetIntrEnb | 0x0, ioaddr + EL3_CMD);	// Block interrupts
-		
+
+		outw(SetIntrEnb | 0x0, ioaddr + EL3_CMD); // Block interrupts
+
 		el3_sendpk(ioaddr + TX_FIFO, data, len);
 
 		/* Interrupt us when the FIFO has room for max-sized packet. */
@@ -294,10 +316,10 @@ static size_t el3_write(struct inode *inode, struct file *file, char *data, size
 		outw(SetTxThreshold + 1536, ioaddr + EL3_CMD);
 
 		outb(0x00, ioaddr + TX_STATUS); /* Pop the status stack. */
-						/* may not be the right place to do this */
+		/* may not be the right place to do this */
 
 		/* Clear the Tx status stack. */
-#if 0		// FIXME - check if this is OK to remove.
+#if 0 // FIXME - check if this is OK to remove.
 		{
 			short tx_status;
 			int i = 4;
@@ -311,11 +333,12 @@ static size_t el3_write(struct inode *inode, struct file *file, char *data, size
 		}
 #endif
 		// FIXME - may not be needed. Maybe trust interrupts ...
-		//while (inb(ioaddr + EL3_STATUS) & CmdBusy) 
-			//el3_mdelay(1);		// Wait - for now, to avoid collision
+		//while (inb(ioaddr + EL3_STATUS) & CmdBusy)
+		//el3_mdelay(1);		// Wait - for now, to avoid collision
 
 		res = len;
-		outw(SetIntrEnb | active_imask, ioaddr + EL3_CMD);	// Reenable interrupts
+		outw(SetIntrEnb | active_imask,
+		     ioaddr + EL3_CMD); // Reenable interrupts
 		break;
 	}
 	return res;
@@ -346,7 +369,7 @@ static void el3_int(int irq, struct pt_regs *regs)
 	unsigned int status;
 	int i = max_interrupt_work;
 
-	outw(SetIntrEnb | 0x0, ioaddr + EL3_CMD);	// Block interrupts
+	outw(SetIntrEnb | 0x0, ioaddr + EL3_CMD); // Block interrupts
 	//printk("I");
 
 	while ((status = inw(ioaddr + EL3_STATUS)) & active_imask) {
@@ -354,26 +377,37 @@ static void el3_int(int irq, struct pt_regs *regs)
 
 		if (status & (RxEarly | RxComplete)) {
 			int err = inw(ioaddr + RX_STATUS);
-			if (err & 0x4000) {	/* We have an error, record and recover */
-				if (err & 0x3800) { 	/* packet error */
-					if (verbose) printk(EMSG_RXERR, model_name, err);
+			if (err &
+			    0x4000) { /* We have an error, record and recover */
+				if (err & 0x3800) { /* packet error */
+					if (verbose)
+						printk(EMSG_RXERR, model_name,
+						       err);
 					//printk("eth: RX error, status %04x len %d\n", err&0x3800, err&0x7ff);
 					netif_stat.rx_errors++;
 				} else {
-					if (verbose) printk(EMSG_OFLOW, model_name, 0, netif_stat.oflow_keep);
+					if (verbose)
+						printk(EMSG_OFLOW, model_name,
+						       0,
+						       netif_stat.oflow_keep);
 					netif_stat.oflow_errors++;
 				}
-				outw(RxDiscard, ioaddr + EL3_CMD); /* Discard this packet. */
-				inw(ioaddr + EL3_STATUS); 				/* Delay. */
-				while ((err = inw(ioaddr + EL3_STATUS) & 0x1000)) {
+				outw(RxDiscard,
+				     ioaddr +
+					     EL3_CMD); /* Discard this packet. */
+				inw(ioaddr + EL3_STATUS); /* Delay. */
+				while ((err = inw(ioaddr + EL3_STATUS) &
+					      0x1000)) {
 					// FIXME: Doesn't seem to be a problem, delete printk later
-				
-					printk("eth: RX discard wait (%x)\n", err);
+
+					printk("eth: RX discard wait (%x)\n",
+					       err);
 					el3_mdelay(1);
 				}
 			} else {
 				wake_up(&rxwait);
-				active_imask &= ~RxComplete;	// Disable RxComplete for now
+				active_imask &=
+					~RxComplete; // Disable RxComplete for now
 			}
 
 			//outw(SetRxThreshold | 60, ioaddr + EL3_CMD);	// Reactivate before ack
@@ -388,53 +422,68 @@ static void el3_int(int irq, struct pt_regs *regs)
 		}
 		if (status & (AdapterFailure | StatsFull | TxComplete)) {
 			/* Handle all uncommon interrupts. */
-			if (status & StatsFull)			/* Empty statistics. */
+			if (status & StatsFull) /* Empty statistics. */
 				update_stats();
 
-#if LATER		/* Candidate for optimization  */
+#if LATER /* Candidate for optimization  */
 			if (status & RxEarly) {
 				//el3_rx(dev);
 				outw(AckIntr | RxEarly, ioaddr + EL3_CMD);
 				printk("RxEarly int\n");
 			}
 #endif
-			if (status & TxComplete) {		/* Really Tx error. */
+			if (status & TxComplete) { /* Really Tx error. */
 				short tx_status;
 				int k = 4;
 
-				if (verbose) printk(EMSG_TXERR, model_name, inb(ioaddr + TX_STATUS));
+				if (verbose)
+					printk(EMSG_TXERR, model_name,
+					       inb(ioaddr + TX_STATUS));
 				netif_stat.tx_errors++;
-				while (--k > 0 && (tx_status = inb(ioaddr + TX_STATUS)) > 0) {
+				while (--k > 0 &&
+				       (tx_status = inb(ioaddr + TX_STATUS)) >
+					       0) {
 					//if (tx_status & 0x38) dev->stats.tx_aborted_errors++;
-					if (tx_status & 0x30) outw(TxReset, ioaddr + EL3_CMD);
-					if (tx_status & 0x3C) outw(TxEnable, ioaddr + EL3_CMD);
-					outb(0x00, ioaddr + TX_STATUS); /* Pop the status stack. */
+					if (tx_status & 0x30)
+						outw(TxReset, ioaddr + EL3_CMD);
+					if (tx_status & 0x3C)
+						outw(TxEnable,
+						     ioaddr + EL3_CMD);
+					outb(0x00,
+					     ioaddr +
+						     TX_STATUS); /* Pop the status stack. */
 				}
 			}
 			/* Adapter failure is either transmit overrun or receive underrun,
 			 * both are really driver or host faults, should not happen. */
 			if (status & AdapterFailure) {
 				/* Adapter failure requires Rx reset and reinit. */
-				if (verbose) printk(EMSG_ERROR, model_name, status);
+				if (verbose)
+					printk(EMSG_ERROR, model_name, status);
 				outw(RxReset, ioaddr + EL3_CMD);
 				/* Set the Rx filter to the current state. */
-				outw(SetRxFilter | RxStation | RxBroadcast, ioaddr + EL3_CMD);
+				outw(SetRxFilter | RxStation | RxBroadcast,
+				     ioaddr + EL3_CMD);
 
-				outw(RxEnable, ioaddr + EL3_CMD); /* Re-enable the receiver. */
-				outw(AckIntr | AdapterFailure, ioaddr + EL3_CMD);
+				outw(RxEnable,
+				     ioaddr +
+					     EL3_CMD); /* Re-enable the receiver. */
+				outw(AckIntr | AdapterFailure,
+				     ioaddr + EL3_CMD);
 			}
 		}
 
-		if (--i < 0) {		/* Should not happen */
+		if (--i < 0) { /* Should not happen */
 			printk("eth: Infinite loop in interrupt, status %4.4x.\n",
-				   status);
+			       status);
 
 			/* Clear all interrupts. */
 			outw(AckIntr | 0xFF, ioaddr + EL3_CMD);
 			break;
 		}
 		/* General acknowledge the IRQ. */
-		outw(AckIntr | IntReq | IntLatch, ioaddr + EL3_CMD); /* Ack IRQ */
+		outw(AckIntr | IntReq | IntLatch,
+		     ioaddr + EL3_CMD); /* Ack IRQ */
 	}
 
 	outw(SetIntrEnb | active_imask, ioaddr + EL3_CMD);
@@ -443,10 +492,8 @@ static void el3_int(int irq, struct pt_regs *regs)
 	return;
 }
 
-
 #if LATER
-static struct net_device_stats *
-el3_get_stats(struct net_device *dev)
+static struct net_device_stats *el3_get_stats(struct net_device *dev)
 {
 	struct el3_private *lp = netdev_priv(dev);
 	unsigned long flags;
@@ -470,9 +517,8 @@ el3_get_stats(struct net_device *dev)
 	window 1 is always valid rather than use a special window-state variable.
 	*/
 /* ELKS: Dummy for now */
-static void update_stats( void )
+static void update_stats(void)
 {
-
 	//printk("eth: Updating statistics.\n");
 
 	/* Turn off statistics updates while reading. */
@@ -492,19 +538,19 @@ static void update_stats( void )
 	/* Tx deferrals */		   inb(ioaddr + 8);
 #else
 	{
-	int i = 0;
-	while (i++ < 9) inb(ioaddr + i);
+		int i = 0;
+		while (i++ < 9)
+			inb(ioaddr + i);
 	}
 #endif
 	// The final two are word size
-	inw(ioaddr + 10);	/* Total Rx and Tx octets. */
+	inw(ioaddr + 10); /* Total Rx and Tx octets. */
 	inw(ioaddr + 12);
 
 	/* Back to window 1, and turn statistics back on. */
 	EL3WINDOW(1);
 	outw(StatsEnable, ioaddr + EL3_CMD);
 }
-
 
 /*
  * Release (close) device
@@ -525,19 +571,18 @@ static void el3_release(struct inode *inode, struct file *file)
 	}
 }
 
-
-static size_t el3_read(struct inode *inode, struct file *filp, char *data, size_t len)
+static size_t el3_read(struct inode *inode, struct file *filp, char *data,
+		       size_t len)
 {
 	short rx_status;
 	size_t res;
 
-	while(1) {
-		
+	while (1) {
 		rx_status = inw(ioaddr + RX_STATUS);
 		//printk("R%04x", rx_status);		// DEBUG
 		prepare_to_wait_interruptible(&rxwait);
 
-		if (rx_status & 0x8000) {	// FIFO empty or incomplete
+		if (rx_status & 0x8000) { // FIFO empty or incomplete
 			if (filp->f_flags & O_NONBLOCK) {
 				res = -EAGAIN;
 				break;
@@ -549,14 +594,15 @@ static size_t el3_read(struct inode *inode, struct file *filp, char *data, size_
 			}
 		}
 
-		outw(SetIntrEnb | 0x0, ioaddr + EL3_CMD);	// Block interrupts
-		if (rx_status & 0x4000) {	/* Error, should not happen	*/
-						/* Should be caught in the int handler */
+		outw(SetIntrEnb | 0x0, ioaddr + EL3_CMD); // Block interrupts
+		if (rx_status & 0x4000) { /* Error, should not happen	*/
+			/* Should be caught in the int handler */
 			short error = rx_status & 0x3800;
 
 			outw(RxDiscard, ioaddr + EL3_CMD);
-			printk("3c509: Error in read (%04x), buffer cleared\n", error);
-			inw(ioaddr + EL3_STATUS); 				/* Delay. */
+			printk("3c509: Error in read (%04x), buffer cleared\n",
+			       error);
+			inw(ioaddr + EL3_STATUS); /* Delay. */
 			while ((res = inw(ioaddr + EL3_STATUS) & 0x1000)) {
 				/// FIXME: printk to be removed	later, seems stable
 				printk("eth: RD discard delay (%x)\n", res);
@@ -565,26 +611,26 @@ static size_t el3_read(struct inode *inode, struct file *filp, char *data, size_
 			res = -EIO;
 		} else {
 			short pkt_len = rx_status & 0x7ff;
-			el3_insw(ioaddr + RX_FIFO, data, (pkt_len + 1) >> 1); //Word size
+			el3_insw(ioaddr + RX_FIFO, data,
+				 (pkt_len + 1) >> 1); //Word size
 
-			outw(RxDiscard, ioaddr + EL3_CMD); /* Pop top Rx packet. */
+			outw(RxDiscard,
+			     ioaddr + EL3_CMD); /* Pop top Rx packet. */
 			res = pkt_len;
-			
 		}
 		break;
 	}
-	
+
 	finish_wait(&rxwait);
-	active_imask |= RxComplete;	/* Reactivate recv interrupts */
+	active_imask |= RxComplete; /* Reactivate recv interrupts */
 
 	outw(SetIntrEnb | active_imask, ioaddr + EL3_CMD);
 	//printk("r%x:", inw(ioaddr + RX_STATUS));
 	return res;
 }
 
-static void el3_down( void )
+static void el3_down(void)
 {
-
 	/* Turn off statistics ASAP.  We update lp->stats below. */
 	outw(StatsDisable, ioaddr + EL3_CMD);
 
@@ -592,7 +638,7 @@ static void el3_down( void )
 	outw(RxDisable, ioaddr + EL3_CMD);
 	outw(TxDisable, ioaddr + EL3_CMD);
 
-#if 0	/* Some times this prevents TP from coming back on line in the next open() */
+#if 0 /* Some times this prevents TP from coming back on line in the next open() */
 
 	/* Disable link beat and jabber */
 	if (!(net_flags&ETHF_USE_AUI)) {
@@ -615,11 +661,11 @@ static int el3_open(struct inode *inode, struct file *file)
 	int i, err;
 	char *mac_addr = (char *)&netif_stat.mac_addr;
 
-	if (!found) 
+	if (!found)
 		return -ENODEV;
 
 	if (usecount++ != 0)
-		return 0;		// Already open, success
+		return 0; // Already open, success
 
 	err = request_irq(net_irq, el3_int, INT_GENERIC);
 	if (err) {
@@ -645,9 +691,10 @@ static int el3_open(struct inode *inode, struct file *file)
 	outw(TxReset, ioaddr + EL3_CMD);
 
 	for (i = 0; i < 31; i++)
-		inb(ioaddr+TX_STATUS);		/* Clear TX status stack */
+		inb(ioaddr + TX_STATUS); /* Clear TX status stack */
 
-	outw(AckIntr | 0xff, ioaddr + EL3_CMD);	/* Get rid of stray interrupts */
+	outw(AckIntr | 0xff,
+	     ioaddr + EL3_CMD); /* Get rid of stray interrupts */
 
 	/* The IntStatusEnb reg defines which interrupts will be visible,
 	 * The SetIntrEnb reg defines which of the visible interrupts will actually 
@@ -662,16 +709,17 @@ static int el3_open(struct inode *inode, struct file *file)
 	}
 
 	EL3WINDOW(1);
-	
+
 	/* FIXME - decrease this value to see if it impacts performance */
-	outw(SetTxThreshold | 1536, ioaddr + EL3_CMD); /* Signal TxAvailable when this # of 
+	outw(SetTxThreshold | 1536,
+	     ioaddr + EL3_CMD); /* Signal TxAvailable when this # of 
 							* bytes is available */
 	//outw(SetRxThreshold | 60, ioaddr + EL3_CMD);	// Receive interrupts when 60 bytes
-							// are available
+	// are available
 
-#if LATER	// This is tuning, fix later.
-		// NOTE: Enabling full duplex is probably a bad idea, see
-		// https://www.kernel.org/doc/html/v5.17/networking/device_drivers/ethernet/3com/3c509.html
+#if LATER // This is tuning, fix later.                             \
+	  // NOTE: Enabling full duplex is probably a bad idea, see \
+	// https://www.kernel.org/doc/html/v5.17/networking/device_drivers/ethernet/3com/3c509.html
 	{
 		int sw_info, net_diag;
 
@@ -679,7 +727,7 @@ static int el3_open(struct inode *inode, struct file *file)
 			sw_info word (duplex setting plus other useless bits) */
 		EL3WINDOW(0);
 		sw_info = (read_eeprom(ioaddr, 0x14) & 0x400f) |
-			(read_eeprom(ioaddr, 0x0d) & 0xBff0);
+			  (read_eeprom(ioaddr, 0x0d) & 0xBff0);
 		//printk("sw_info %04x ", sw_info);
 		EL3WINDOW(4);
 		//net_diag = inw(ioaddr + WN4_NETDIAG);
@@ -687,24 +735,25 @@ static int el3_open(struct inode *inode, struct file *file)
 		//pr_info("%s: ", dev->name);
 
 		switch (dev->if_port & 0x0c) {
-			case 12:
-				/* force full-duplex mode if 3c5x9b */
-				if (sw_info & 0x000f) {
-					pr_cont("Forcing 3c5x9b full-duplex mode");
-					break;
-				}
-				fallthrough;
-			case 8:
-				/* set full-duplex mode based on eeprom config setting */
-				if ((sw_info & 0x000f) && (sw_info & 0x8000)) {
-					pr_cont("Setting 3c5x9b full-duplex mode (from EEPROM configuration bit)");
-					break;
-				}
-				fallthrough;
-			default:
-				/* xcvr=(0 || 4) OR user has an old 3c5x9 non "B" model */
-				pr_cont("Setting 3c5x9/3c5x9B half-duplex mode");
-				net_diag = (net_diag & ~FD_ENABLE); /* disable full duplex */
+		case 12:
+			/* force full-duplex mode if 3c5x9b */
+			if (sw_info & 0x000f) {
+				pr_cont("Forcing 3c5x9b full-duplex mode");
+				break;
+			}
+			fallthrough;
+		case 8:
+			/* set full-duplex mode based on eeprom config setting */
+			if ((sw_info & 0x000f) && (sw_info & 0x8000)) {
+				pr_cont("Setting 3c5x9b full-duplex mode (from EEPROM configuration bit)");
+				break;
+			}
+			fallthrough;
+		default:
+			/* xcvr=(0 || 4) OR user has an old 3c5x9 non "B" model */
+			pr_cont("Setting 3c5x9/3c5x9B half-duplex mode");
+			net_diag = (net_diag &
+				    ~FD_ENABLE); /* disable full duplex */
 		}
 
 		//outw(net_diag, ioaddr + WN4_NETDIAG);
@@ -743,24 +792,25 @@ static int el3_open(struct inode *inode, struct file *file)
  * I/O control
  */
 
-static int el3_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned int arg)
-{       
+static int el3_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+		     unsigned int arg)
+{
 	int err = 0;
 	byte_t *mac_addr = (byte_t *)&netif_stat.mac_addr;
-	
-	switch (cmd) {
-		case IOCTL_ETH_ADDR_GET:
-			err = verified_memcpy_tofs((byte_t *)arg, mac_addr, 6);
-			break;
 
-		case IOCTL_ETH_GETSTAT:
-			/* Return the entire netif_struct */
-			err = verified_memcpy_tofs((char *)arg, &netif_stat, sizeof(netif_stat));
-			break;
-		
-		default:
-			err = -EINVAL;
-	
+	switch (cmd) {
+	case IOCTL_ETH_ADDR_GET:
+		err = verified_memcpy_tofs((byte_t *)arg, mac_addr, 6);
+		break;
+
+	case IOCTL_ETH_GETSTAT:
+		/* Return the entire netif_struct */
+		err = verified_memcpy_tofs((char *)arg, &netif_stat,
+					   sizeof(netif_stat));
+		break;
+
+	default:
+		err = -EINVAL;
 	}
 	return err;
 }
@@ -770,40 +820,40 @@ static int el3_ioctl(struct inode *inode, struct file *file, unsigned int cmd, u
  */
 
 int el3_select(struct inode *inode, struct file *filp, int sel_type)
-{       
+{
 	int res = 0;
-	
+
 	/* Need to block interrupts to avoid a race condition which happens if
 	   an interrupt happens just after we check RX_STATUS. The interrupt
 	   will turn off recdeive interrupts and select doesn't know that we have data.
 	 */
 	outw(SetIntrEnb | 0x0, ioaddr + EL3_CMD);
 	switch (sel_type) {
-		case SEL_OUT:
-			// FIXME - may need a more accurate tx status test
-			if (inw(ioaddr + TX_FREE) < MAX_PACKET_ETH) {
-				select_wait(&txwait);
-				break;
-			}
-			res = 1;
+	case SEL_OUT:
+		// FIXME - may need a more accurate tx status test
+		if (inw(ioaddr + TX_FREE) < MAX_PACKET_ETH) {
+			select_wait(&txwait);
 			break;
-		
-		case SEL_IN:
+		}
+		res = 1;
+		break;
 
-			// Don't use RxComplete for this test, it has been masked out!
-			if (inw(ioaddr+RX_STATUS) & 0x8000) {
-				//printk("s%x", inw(ioaddr+RX_STATUS));
-				select_wait(&rxwait);
-				break;
-			}
-			res = 1;
+	case SEL_IN:
+
+		// Don't use RxComplete for this test, it has been masked out!
+		if (inw(ioaddr + RX_STATUS) & 0x8000) {
+			//printk("s%x", inw(ioaddr+RX_STATUS));
+			select_wait(&rxwait);
 			break;
-		
-		default:
-			res = -EINVAL;
+		}
+		res = 1;
+		break;
+
+	default:
+		res = -EINVAL;
 	}
 	//printk("S%d", res);
-	outw(SetIntrEnb | active_imask, ioaddr + EL3_CMD);	// reenable interrupts
+	outw(SetIntrEnb | active_imask,
+	     ioaddr + EL3_CMD); // reenable interrupts
 	return res;
 }
-

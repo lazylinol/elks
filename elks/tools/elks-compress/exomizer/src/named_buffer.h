@@ -36,8 +36,8 @@ extern "C" {
 #include "map.h"
 
 struct named_buffer {
-    struct map map;
-    struct chunkpool buf;
+	struct map map;
+	struct chunkpool buf;
 };
 
 void named_buffer_init(struct named_buffer *nb);
@@ -45,7 +45,7 @@ void named_buffer_free(struct named_buffer *nb);
 void named_buffer_clear(struct named_buffer *nb);
 
 void named_buffer_copy(struct named_buffer *nb,
-                       const struct named_buffer *source);
+		       const struct named_buffer *source);
 
 struct buf *new_named_buffer(struct named_buffer *nb, const char *name);
 struct buf *get_named_buffer(struct named_buffer *nb, const char *name);

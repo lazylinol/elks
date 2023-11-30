@@ -15,20 +15,21 @@
 // More modern wait function than deprecated 'sleep_on'
 // See issue #222
 
-bool_t _wait_event (cond_t * c, bool_t i)
+bool_t _wait_event(cond_t *c, bool_t i)
 {
 	bool_t res = 0;
 
-	if (!cond_test (c)) {
+	if (!cond_test(c)) {
+		if (current == &task[0])
+			panic("task 0 waits condition %x", (int)c);
 
-		if (current == &task [0])
-			panic ("task 0 waits condition %x", (int) c);
-
-		wait_set ((struct wait_queue *) (c->obj));
+		wait_set((struct wait_queue *)(c->obj));
 		while (1) {
-			current->state = i ? TASK_INTERRUPTIBLE : TASK_UNINTERRUPTIBLE;
-			if (cond_test (c)) break;
-			schedule ();
+			current->state = i ? TASK_INTERRUPTIBLE :
+						   TASK_UNINTERRUPTIBLE;
+			if (cond_test(c))
+				break;
+			schedule();
 
 			if (i && current->signal) {
 				// Interrupted by signal
@@ -38,7 +39,7 @@ bool_t _wait_event (cond_t * c, bool_t i)
 		}
 
 		current->state = TASK_RUNNING;
-		wait_clear ((struct wait_queue *) (c->obj));
+		wait_clear((struct wait_queue *)(c->obj));
 	}
 
 	return res;

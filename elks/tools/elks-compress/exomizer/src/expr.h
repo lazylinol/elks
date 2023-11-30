@@ -34,18 +34,16 @@ extern "C" {
 #include "int.h"
 #include "asm.tab.h"
 
-union expr_type
-{
-    i32 number;
-    const char *symref;
-    struct expr *arg1;
+union expr_type {
+	i32 number;
+	const char *symref;
+	struct expr *arg1;
 };
 
-struct expr
-{
-    union expr_type type;
-    struct expr *expr_arg2;
-    i16 expr_op;
+struct expr {
+	union expr_type type;
+	struct expr *expr_arg2;
+	i16 expr_op;
 };
 
 void expr_init(void);

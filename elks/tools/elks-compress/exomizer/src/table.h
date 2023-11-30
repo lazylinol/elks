@@ -33,34 +33,33 @@ extern "C" {
 
 #include "vec.h"
 
-#define ALIGN_LEFT  0
+#define ALIGN_LEFT 0
 #define ALIGN_RIGHT 1
 
-#define STATIC_TABLE_INIT(CELL_PADDING) \
-    {STATIC_VEC_INIT(sizeof struct table_col), \
-     STATIC_VEC_INIT(sizeof struct vec), \
-     (CELL_PADDING)}
+#define STATIC_TABLE_INIT(CELL_PADDING)                                    \
+	{                                                                  \
+		STATIC_VEC_INIT(sizeof struct table_col),                  \
+			STATIC_VEC_INIT(sizeof struct vec), (CELL_PADDING) \
+	}
 
 struct table_ctx {
-    struct vec cols;
-    struct vec rows;
-    int cell_padding;
+	struct vec cols;
+	struct vec rows;
+	int cell_padding;
 };
 
 struct table_col {
-    char *title;
-    char *value_fmt;
-    const char *align_fmt;
-    int width;
+	char *title;
+	char *value_fmt;
+	const char *align_fmt;
+	int width;
 };
 
 void table_init(struct table_ctx *table, int cell_padding);
 void table_free(struct table_ctx *table);
 
-void table_col_add(struct table_ctx *table,
-                   const char *column_title,
-                   const char *value_fmt,
-                   int value_align_right);
+void table_col_add(struct table_ctx *table, const char *column_title,
+		   const char *value_fmt, int value_align_right);
 
 /* the value list must consist of const char * pointers match
  * the number of columns added */

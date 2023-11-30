@@ -8,6 +8,6 @@
  *
  * set to 100 HZ by Shani <kerr@wizard.net>, since that's what we're using!
  */
-#define HZ			100
+#define HZ 100
 
 #endif

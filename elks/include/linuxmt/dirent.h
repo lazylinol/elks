@@ -5,10 +5,10 @@
 #include <linuxmt/limits.h>
 
 struct dirent {
-    u_ino_t         d_ino;
-    off_t           d_offset;
-    unsigned short  d_namlen;
-    char            d_name[MAXNAMLEN+1];
+	u_ino_t d_ino;
+	off_t d_offset;
+	unsigned short d_namlen;
+	char d_name[MAXNAMLEN + 1];
 };
 
 #endif

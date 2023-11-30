@@ -8,8 +8,8 @@
 
 struct msdos_inode_info {
 	cluster_t i_start; /* first cluster or 0 */
-	int i_attrs;	/* unused attribute bits */
-	int i_busy;	/* file is either deleted but still open, or
+	int i_attrs;	   /* unused attribute bits */
+	int i_busy;	   /* file is either deleted but still open, or
 			   inconsistent (mkdir) */
 };
 

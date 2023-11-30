@@ -31,12 +31,11 @@ extern "C" {
  *
  */
 
-struct progress
-{
-    char *msg;
-    float factor;
-    int offset;
-    int last;
+struct progress {
+	char *msg;
+	float factor;
+	int offset;
+	int last;
 };
 
 void progress_init(struct progress *p, char *msg, int start, int end);

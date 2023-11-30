@@ -35,28 +35,23 @@ extern "C" {
 #include "vec.h"
 
 struct chunkpool {
-    int item_size;
-    int item_pos;
-    int item_end;
-    void *current_chunk;
-    struct vec used_chunks;
-    int alloc_count;
+	int item_size;
+	int item_pos;
+	int item_end;
+	void *current_chunk;
+	struct vec used_chunks;
+	int alloc_count;
 };
 
-void
-chunkpool_init(struct chunkpool *ctx, int item_size);
+void chunkpool_init(struct chunkpool *ctx, int item_size);
 
-void
-chunkpool_free(struct chunkpool *ctx);
+void chunkpool_free(struct chunkpool *ctx);
 
-void
-chunkpool_free2(struct chunkpool *ctx, cb_free *f);
+void chunkpool_free2(struct chunkpool *ctx, cb_free *f);
 
-void *
-chunkpool_malloc(struct chunkpool *ctx);
+void *chunkpool_malloc(struct chunkpool *ctx);
 
-void *
-chunkpool_calloc(struct chunkpool *ctx);
+void *chunkpool_calloc(struct chunkpool *ctx);
 
 #ifdef __cplusplus
 }

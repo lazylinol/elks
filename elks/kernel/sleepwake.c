@@ -37,70 +37,73 @@
 
 void prepare_to_wait_interruptible(struct wait_queue *p)
 {
-    current->state = TASK_INTERRUPTIBLE;
-    wait_set(p);
+	current->state = TASK_INTERRUPTIBLE;
+	wait_set(p);
 }
 
 void prepare_to_wait(struct wait_queue *p)
 {
-    current->state = TASK_UNINTERRUPTIBLE;
-    wait_set(p);
+	current->state = TASK_UNINTERRUPTIBLE;
+	wait_set(p);
 }
 
 void do_wait(void)
 {
-    debug_sched("sleep: %P waitq %04x\n", current->waitpt);
-    schedule();
+	debug_sched("sleep: %P waitq %04x\n", current->waitpt);
+	schedule();
 }
 
 void finish_wait(struct wait_queue *p)
 {
-    current->state = TASK_RUNNING;
-    wait_clear(p);
+	current->state = TASK_RUNNING;
+	wait_clear(p);
 }
 
 /**********************************/
 
 void wait_set(struct wait_queue *p)
 {
-    register __ptask pcurrent = current;
+	register __ptask pcurrent = current;
 
 #ifdef CHECK_SCHED
-    if (pcurrent->waitpt) panic("SCHED: wait_set double wait");
+	if (pcurrent->waitpt)
+		panic("SCHED: wait_set double wait");
 #endif
-    pcurrent->waitpt = p;
+	pcurrent->waitpt = p;
 }
 
 void wait_clear(struct wait_queue *p)
 {
-    register __ptask pcurrent = current;
+	register __ptask pcurrent = current;
 
 #ifdef CHECK_SCHED
-    if (pcurrent->waitpt != p) panic("SCHED: wait_clear wrong waitpt");
+	if (pcurrent->waitpt != p)
+		panic("SCHED: wait_clear wrong waitpt");
 #endif
-    pcurrent->waitpt = NULL;
+	pcurrent->waitpt = NULL;
 }
 
 static void __sleep_on(register struct wait_queue *p, int state)
 {
 #ifdef CHECK_SCHED
-    if (current == &task[0]) panic("SCHED: trying to sleep idle task on %x", p);
+	if (current == &task[0])
+		panic("SCHED: trying to sleep idle task on %x", p);
 #endif
-    debug_sched("sleep: %P waitq %04x\n", p);
-    current->state = state;
-    wait_set(p);
-    schedule();
-    wait_clear(p);
+	debug_sched("sleep: %P waitq %04x\n", p);
+	current->state = state;
+	wait_set(p);
+	schedule();
+	wait_clear(p);
 }
 
 void sleep_on(struct wait_queue *p)
 {
-    __sleep_on(p, TASK_UNINTERRUPTIBLE);
+	__sleep_on(p, TASK_UNINTERRUPTIBLE);
 }
 
 void interruptible_sleep_on(struct wait_queue *p)
 {
-    __sleep_on(p, TASK_INTERRUPTIBLE);
+	__sleep_on(p, TASK_INTERRUPTIBLE);
 }
 
 /*
@@ -114,15 +117,15 @@ void interruptible_sleep_on(struct wait_queue *p)
 
 void wake_up_process(register struct task_struct *p)
 {
-    flag_t flags;
+	flag_t flags;
 
-    debug_sched("wakeup: %d\n", p->pid);
-    save_flags(flags);
-    clr_irq();
-    p->state = TASK_RUNNING;
-    if (!p->next_run)
-        add_to_runqueue(p);
-    restore_flags(flags);
+	debug_sched("wakeup: %d\n", p->pid);
+	save_flags(flags);
+	clr_irq();
+	p->state = TASK_RUNNING;
+	if (!p->next_run)
+		add_to_runqueue(p);
+	restore_flags(flags);
 }
 
 /*
@@ -136,17 +139,19 @@ void wake_up_process(register struct task_struct *p)
 
 void _wake_up(register struct wait_queue *q, int it)
 {
-    register struct task_struct *p;
+	register struct task_struct *p;
 
-    for_each_task(p) {
-        if (p->state == TASK_UNUSED)
-                continue;
-        if ((p->waitpt == q) || ((p->waitpt == &select_queue) && select_poll (p, q)))
-            if (p->state == TASK_INTERRUPTIBLE ||
-                (it && p->state == TASK_UNINTERRUPTIBLE)) {
-                wake_up_process(p);
-            }
-    }
+	for_each_task(p)
+	{
+		if (p->state == TASK_UNUSED)
+			continue;
+		if ((p->waitpt == q) ||
+		    ((p->waitpt == &select_queue) && select_poll(p, q)))
+			if (p->state == TASK_INTERRUPTIBLE ||
+			    (it && p->state == TASK_UNINTERRUPTIBLE)) {
+				wake_up_process(p);
+			}
+	}
 }
 
 /*
@@ -155,20 +160,22 @@ void _wake_up(register struct wait_queue *q, int it)
 
 void up(register sem_t *s)
 {
-    if (++(*s) == 0)            /* Gone non-negative */
-        wake_up((void *) s);
+	if (++(*s) == 0) /* Gone non-negative */
+		wake_up((void *)s);
 
-    if (*s != 0) debug_net("kernel: sem up %x FAIL %d\n", s, *s);
+	if (*s != 0)
+		debug_net("kernel: sem up %x FAIL %d\n", s, *s);
 }
 
 void down(register sem_t *s)
 {
-    /* Wait for the semaphore */
-    while (*s < 0)
-        sleep_on((void *) s);
+	/* Wait for the semaphore */
+	while (*s < 0)
+		sleep_on((void *)s);
 
-    /* Take it */
-    --(*s);
+	/* Take it */
+	--(*s);
 
-    if (*s != -1) debug_net("kernel: sem down %x FAIL %d\n", s, *s);
+	if (*s != -1)
+		debug_net("kernel: sem down %x FAIL %d\n", s, *s);
 }

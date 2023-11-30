@@ -37,34 +37,34 @@ extern int sys_kill(pid_t, sig_t);
 
 int sys_reboot(unsigned int magic, unsigned int magic_too, int flag)
 {
-    if (!suser())
-	return -EPERM;
+	if (!suser())
+		return -EPERM;
 
-    if (magic == 0x1D1E && magic_too == 0xC0DE) {
-	switch(flag) {
-	    case 0x4567:
-		flag = 1;
-		/* fall through*/
-	    case 0:
-		C_A_D = flag;
-		return 0;
-	    case 0x0123:		/* reboot*/
-		hard_reset_now();
-		printk("Reboot failed\n");
-		/* fall through*/
-	    case 0x6789:		/* shutdown*/
-		sys_kill(1, SIGKILL);
-		sys_kill(-1, SIGKILL);
-		printk("System halted\n");
-		do_exit(0);
-		/* no return*/
-	    case 0xDEAD:		/* poweroff*/
-		apm_shutdown_now();
-		printk("APM shutdown failed\n");
+	if (magic == 0x1D1E && magic_too == 0xC0DE) {
+		switch (flag) {
+		case 0x4567:
+			flag = 1;
+			/* fall through*/
+		case 0:
+			C_A_D = flag;
+			return 0;
+		case 0x0123: /* reboot*/
+			hard_reset_now();
+			printk("Reboot failed\n");
+			/* fall through*/
+		case 0x6789: /* shutdown*/
+			sys_kill(1, SIGKILL);
+			sys_kill(-1, SIGKILL);
+			printk("System halted\n");
+			do_exit(0);
+			/* no return*/
+		case 0xDEAD: /* poweroff*/
+			apm_shutdown_now();
+			printk("APM shutdown failed\n");
+		}
 	}
-    }
 
-    return -EINVAL;
+	return -EINVAL;
 }
 
 /*
@@ -75,10 +75,10 @@ int sys_reboot(unsigned int magic, unsigned int magic_too, int flag)
 
 void ctrl_alt_del(void)
 {
-    if (C_A_D)
-	hard_reset_now();
+	if (C_A_D)
+		hard_reset_now();
 
-    kill_process(1, (sig_t) SIGINT, 1);
+	kill_process(1, (sig_t)SIGINT, 1);
 }
 
 /*
@@ -87,7 +87,8 @@ void ctrl_alt_del(void)
 
 int sys_uname(struct utsname *utsname)
 {
-    return verified_memcpy_tofs(utsname, &system_utsname, sizeof(struct utsname));
+	return verified_memcpy_tofs(utsname, &system_utsname,
+				    sizeof(struct utsname));
 }
 
 /*
@@ -96,47 +97,47 @@ int sys_uname(struct utsname *utsname)
 
 int sys_setgid(gid_t gid)
 {
-    register __ptask currentp = current;
+	register __ptask currentp = current;
 
-    if (suser())
-	currentp->gid = currentp->egid = currentp->sgid = gid;
-    else if ((gid == currentp->gid) || (gid == currentp->sgid))
-	currentp->egid = gid;
-    else
-	return -EPERM;
-    return 0;
+	if (suser())
+		currentp->gid = currentp->egid = currentp->sgid = gid;
+	else if ((gid == currentp->gid) || (gid == currentp->sgid))
+		currentp->egid = gid;
+	else
+		return -EPERM;
+	return 0;
 }
 
 static int twovalues(int retval, int *copyval, int *copyaddr)
 {
-    if (verified_memcpy_tofs(copyaddr, copyval, sizeof(int)) != 0)
-	return -EFAULT;
-    return retval;
+	if (verified_memcpy_tofs(copyaddr, copyval, sizeof(int)) != 0)
+		return -EFAULT;
+	return retval;
 }
 
 uid_t sys_getuid(int *euid)
 {
-    return twovalues(current->uid, (int *)&current->euid, euid);
+	return twovalues(current->uid, (int *)&current->euid, euid);
 }
 
 uid_t sys_getgid(int *egid)
 {
-    return twovalues(current->gid, (int *)&current->egid, egid);
+	return twovalues(current->gid, (int *)&current->egid, egid);
 }
 
 pid_t sys_getpid(int *ppid)
 {
-    return twovalues(current->pid, (int *)&current->ppid, ppid);
+	return twovalues(current->pid, (int *)&current->ppid, ppid);
 }
 
 unsigned short int sys_umask(unsigned short int mask)
 {
-    register __ptask currentp = current;
-    unsigned short int old;
+	register __ptask currentp = current;
+	unsigned short int old;
 
-    old = currentp->fs.umask;
-    currentp->fs.umask = mask & ((unsigned short int) S_IRWXUGO);
-    return old;
+	old = currentp->fs.umask;
+	currentp->fs.umask = mask & ((unsigned short int)S_IRWXUGO);
+	return old;
 }
 
 /*
@@ -153,44 +154,44 @@ unsigned short int sys_umask(unsigned short int mask)
 
 int sys_setuid(uid_t uid)
 {
-    register __ptask currentp = current;
+	register __ptask currentp = current;
 
-    if (suser())
-	currentp->uid = currentp->euid = currentp->suid = uid;
-    else if ((uid == currentp->uid) || (uid == currentp->suid))
-	currentp->euid = uid;
-    else
-	return -EPERM;
-    return 0;
+	if (suser())
+		currentp->uid = currentp->euid = currentp->suid = uid;
+	else if ((uid == currentp->uid) || (uid == currentp->suid))
+		currentp->euid = uid;
+	else
+		return -EPERM;
+	return 0;
 }
 
 int sys_setsid(void)
 {
-    register __ptask currentp = current;
+	register __ptask currentp = current;
 
-    if (currentp->session == currentp->pid)
-	return -EPERM;
-    debug_tty("SETSID pgrp %P\n");
-    currentp->session = currentp->pgrp = currentp->pid;
-    currentp->tty = NULL;
+	if (currentp->session == currentp->pid)
+		return -EPERM;
+	debug_tty("SETSID pgrp %P\n");
+	currentp->session = currentp->pgrp = currentp->pid;
+	currentp->tty = NULL;
 
-    return currentp->pgrp;
+	return currentp->pgrp;
 }
 
 #if UNUSED
 int sys_times(struct tms *tbuf)
 {
-    if (tbuf) {
-	int error = verify_area(VERIFY_WRITE, tbuf, sizeof *tbuf);
+	if (tbuf) {
+		int error = verify_area(VERIFY_WRITE, tbuf, sizeof *tbuf);
 
-	if (error)
-	    return error;
-	put_user_long(current->utime, &tbuf->tms_utime);
-	put_user_long(current->stime, &tbuf->tms_stime);
-	put_user_long(current->cutime, &tbuf->tms_cutime);
-	put_user_long(current->cstime, &tbuf->tms_cstime);
-    }
-    return jiffies;
+		if (error)
+			return error;
+		put_user_long(current->utime, &tbuf->tms_utime);
+		put_user_long(current->stime, &tbuf->tms_stime);
+		put_user_long(current->cutime, &tbuf->tms_cutime);
+		put_user_long(current->cstime, &tbuf->tms_cstime);
+	}
+	return jiffies;
 }
 
 /*
@@ -208,83 +209,82 @@ int sys_times(struct tms *tbuf)
 
 int sys_setpgid(pid_t pid, pid_t pgid)
 {
-    register struct task_struct *p;
+	register struct task_struct *p;
 
-    if (!pid)
-	pid = current->pid;
+	if (!pid)
+		pid = current->pid;
 
-    if (!pgid)
-	pgid = pid;
+	if (!pgid)
+		pgid = pid;
 
-    if (pgid < 0)
-	return -EINVAL;
+	if (pgid < 0)
+		return -EINVAL;
 
-    for_each_task(p) {
-	if (p->pid == pid && p->state != TASK_UNUSED) {
+	for_each_task(p)
+	{
+		if (p->pid == pid && p->state != TASK_UNUSED) {
+			if (p->p_pptr == current || p->p_opptr == current) {
+				if (p->session != current->session)
+					return -EPERM;
 
-	    if (p->p_pptr == current || p->p_opptr == current) {
+				if (p->did_exec)
+					return -EACCES;
 
-		if (p->session != current->session)
-		    return -EPERM;
+			} else if (p != current)
+				return -ESRCH;
 
-		if (p->did_exec)
-		    return -EACCES;
+			if (p->leader)
+				return -EPERM;
 
-	    } else if (p != current)
-		return -ESRCH;
+			if (pgid != pid) {
+				struct task_struct *tmp;
 
-	    if (p->leader)
-		return -EPERM;
+				for_each_task(tmp)
+				{
+					if ((tmp->pgrp == pgid &&
+					     tmp->state != TASK_UNUSED) &&
+					    (tmp->session ==
+					     current->session)) {
+						goto ok_pgid:
+					}
+				}
+				return -EPERM;
+			}
 
-	    if (pgid != pid) {
-		struct task_struct *tmp;
+ok_pgid:
+			p->pgrp = pgid;
 
-		for_each_task(tmp) {
-		    if ((tmp->pgrp == pgid && tmp->state != TASK_UNUSED)
-			&& (tmp->session == current->session)) {
-			goto ok_pgid:
-		    }
+			return 0;
 		}
-		return -EPERM;
-	    }
-
-	ok_pgid:
-	    p->pgrp = pgid;
-
-	    return 0;
 	}
-    }
-    return -ESRCH;
+	return -ESRCH;
 }
 
 int sys_getpgid(pid_t pid)
 {
-    register struct task_struct *p;
+	register struct task_struct *p;
 
-    if (!pid)
-	return current->pgrp;
-    for_each_task(p)
-	if (p->pid == pid && p->state != TASK_UNUSED)
-	    return p->pgrp;
-    return -ESRCH;
+	if (!pid)
+		return current->pgrp;
+	for_each_task(p) if (p->pid == pid &&
+			     p->state != TASK_UNUSED) return p->pgrp;
+	return -ESRCH;
 }
 
 int sys_getpgrp(void)
 {
-    return current->pgrp;
+	return current->pgrp;
 }
 
 int sys_getsid(pid_t pid)
 {
-    register struct task_struct *p;
+	register struct task_struct *p;
 
-    if (!pid)
-	return current->session;
-    for_each_task(p)
-	if (p->pid == pid && p->state != TASK_UNUSED)
-	    return p->session;
-    return -ESRCH;
-
+	if (!pid)
+		return current->session;
+	for_each_task(p) if (p->pid == pid &&
+			     p->state != TASK_UNUSED) return p->session;
+	return -ESRCH;
 }
 #endif
 
@@ -293,68 +293,68 @@ int sys_getsid(pid_t pid)
  * Supplementary group ID's
  */
 
-#define NOGROUP     0xFFFF
+#define NOGROUP 0xFFFF
 
-int sys_getgroups(int gidsetsize, gid_t * grouplist)
+int sys_getgroups(int gidsetsize, gid_t *grouplist)
 {
-    register gid_t *pg = current->groups;
-    int i = 0;
+	register gid_t *pg = current->groups;
+	int i = 0;
 
-    while ((pg[i] != NOGROUP) && (++i < NGROUPS))
-	continue;
+	while ((pg[i] != NOGROUP) && (++i < NGROUPS))
+		continue;
 
-    if (i && gidsetsize) {
-	if (i > gidsetsize) {
-	    return -EINVAL;
+	if (i && gidsetsize) {
+		if (i > gidsetsize) {
+			return -EINVAL;
+		}
+		if (verified_memcpy_tofs(grouplist, pg, i * sizeof(gid_t)) != 0)
+			return -EFAULT;
 	}
-	if (verified_memcpy_tofs(grouplist, pg, i * sizeof(gid_t)) != 0)
-	    return -EFAULT;
 
-    }
-
-    return i;
+	return i;
 }
 
-int sys_setgroups(int gidsetsize, gid_t * grouplist)
+int sys_setgroups(int gidsetsize, gid_t *grouplist)
 {
-    register gid_t *pg;
-    register gid_t *lg;
+	register gid_t *pg;
+	register gid_t *lg;
 
-    if (!suser())
-        return -EPERM;
+	if (!suser())
+		return -EPERM;
 
-    if (((unsigned int)gidsetsize) > NGROUPS)
-        return -EINVAL;
+	if (((unsigned int)gidsetsize) > NGROUPS)
+		return -EINVAL;
 
-    pg = current->groups;
-    lg = pg + gidsetsize;
+	pg = current->groups;
+	lg = pg + gidsetsize;
 
-    if (lg > pg) {
-	if (verified_memcpy_fromfs(pg, grouplist, ((char *)lg) - ((char *)pg)))
-	    return -EFAULT;
-    }
+	if (lg > pg) {
+		if (verified_memcpy_fromfs(pg, grouplist,
+					   ((char *)lg) - ((char *)pg)))
+			return -EFAULT;
+	}
 
-    if (gidsetsize < NGROUPS) {
-	*lg = NOGROUP;
-    }
+	if (gidsetsize < NGROUPS) {
+		*lg = NOGROUP;
+	}
 
-    return 0;
+	return 0;
 }
 
 int in_group_p(gid_t grp)
 {
-    gid_t *pg;
-    char *p;
+	gid_t *pg;
+	char *p;
 
     if (grp != (current->egid) {
-	pg = current->groups - 1;
-	p = (char *)(pg + NGROUPS);
+		pg = current->groups - 1;
+		p = (char *)(pg + NGROUPS);
 
-	do {
-	    if ((++pg > ((gid_t *) p)) || (*pg == NOGROUP)) {
-		return 0;
-	    }
-	} while (*pg != grp);
+		do {
+			if ((++pg > ((gid_t *)p)) || (*pg == NOGROUP)) {
+				return 0;
+			}
+		} while (*pg != grp);
     }
 
     return 1;
@@ -364,7 +364,7 @@ int in_group_p(gid_t grp)
 
 int in_group_p(gid_t grp)
 {
-    return (grp == current->egid);
+	return (grp == current->egid);
 }
 
 #endif

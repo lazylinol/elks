@@ -7,12 +7,12 @@
 
 // Wait for lock (not interruptible)
 
-void wait_lock (lock_t * lock);
+void wait_lock(lock_t *lock);
 #define lock_wait wait_lock
 
 // Unlock with event
 
-void event_unlock (lock_t * lock);
+void event_unlock(lock_t *lock);
 #define unlock_event event_unlock
 
 #endif

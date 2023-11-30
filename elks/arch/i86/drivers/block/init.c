@@ -30,38 +30,42 @@
 #include <arch/system.h>
 #include <arch/segment.h>
 
-int boot_rootdev;       /* set by /bootopts options if configured*/
+int boot_rootdev; /* set by /bootopts options if configured*/
 
 void INITPROC device_init(void)
 {
-    register struct gendisk *p;
+	register struct gendisk *p;
 
-    chr_dev_init();
-    blk_dev_init();
+	chr_dev_init();
+	blk_dev_init();
 
-    set_irq();
+	set_irq();
 
-    for (p = gendisk_head; p; p = p->next)
-        setup_dev(p);
+	for (p = gendisk_head; p; p = p->next)
+		setup_dev(p);
 
-#if defined(CONFIG_BLK_DEV_BFD) || defined(CONFIG_BLK_DEV_BHD) || defined(CONFIG_BLK_DEV_FD)
-    /*
+#if defined(CONFIG_BLK_DEV_BFD) || defined(CONFIG_BLK_DEV_BHD) || \
+	defined(CONFIG_BLK_DEV_FD)
+	/*
      * The bootloader may have passed us a ROOT_DEV which is actually a BIOS
      * drive number.  If so, convert it into a proper <major, minor> block
      * device number.  -- tkchia 20200308
      */
-    if (!boot_rootdev && (SETUP_ELKS_FLAGS & EF_BIOS_DEV_NUM) != 0) {
-        dev_t rootdev = 0;
+	if (!boot_rootdev && (SETUP_ELKS_FLAGS & EF_BIOS_DEV_NUM) != 0) {
+		dev_t rootdev = 0;
 #ifdef CONFIG_BLK_DEV_FD
-        if (ROOT_DEV == 0) rootdev = DEV_DF0;
-        else if (ROOT_DEV == 1) rootdev = DEV_DF1;
+		if (ROOT_DEV == 0)
+			rootdev = DEV_DF0;
+		else if (ROOT_DEV == 1)
+			rootdev = DEV_DF1;
 #endif
 #if defined(CONFIG_BLK_DEV_BFD) || defined(CONFIG_BLK_DEV_BHD)
-        if (!rootdev)
-            rootdev = bios_conv_bios_drive((unsigned)ROOT_DEV);
+		if (!rootdev)
+			rootdev = bios_conv_bios_drive((unsigned)ROOT_DEV);
 #endif
-        printk("boot: BIOS drive %x, root device %04x\n", ROOT_DEV, rootdev);
-        ROOT_DEV = (kdev_t)rootdev;
-    }
+		printk("boot: BIOS drive %x, root device %04x\n", ROOT_DEV,
+		       rootdev);
+		ROOT_DEV = (kdev_t)rootdev;
+	}
 #endif
 }

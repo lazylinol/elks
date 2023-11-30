@@ -2,5 +2,5 @@
 
 int syscall(void)
 {
-    return -ENOSYS;
+	return -ENOSYS;
 }

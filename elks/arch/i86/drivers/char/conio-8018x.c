@@ -11,7 +11,6 @@
 #include <arch/io.h>
 #include "conio.h"
 
-
 /* initialize*/
 void conio_init(void)
 {
@@ -24,15 +23,16 @@ void conio_init(void)
  */
 int conio_poll(void)
 {
-    /* S0STS bit 0x40 RI (receive interrupt) */
-    if (inw(0xff00 + 0x66) & 0x40) {
-        return inw(0xff00 + 0x68); /* R0BUF */
-    }
-    return 0;
+	/* S0STS bit 0x40 RI (receive interrupt) */
+	if (inw(0xff00 + 0x66) & 0x40) {
+		return inw(0xff00 + 0x68); /* R0BUF */
+	}
+	return 0;
 }
 
 void conio_putc(byte_t c)
 {
-    while((inw(0xff00 + 0x66) & 8) == 0);	/* S0STS */
-    outb(c, 0xff00 + 0x6A);			/* T0BUF */
+	while ((inw(0xff00 + 0x66) & 8) == 0)
+		;		/* S0STS */
+	outb(c, 0xff00 + 0x6A); /* T0BUF */
 }

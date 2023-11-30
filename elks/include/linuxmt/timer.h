@@ -16,10 +16,10 @@
  * to distinguish between the different invocations.
  */
 struct timer_list {
-    struct timer_list *tl_next;
-    jiff_t tl_expires;
-    int tl_data;
-    void (*tl_function) ();
+	struct timer_list *tl_next;
+	jiff_t tl_expires;
+	int tl_data;
+	void (*tl_function)();
 };
 
 struct pt_regs;

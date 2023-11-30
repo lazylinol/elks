@@ -13,19 +13,19 @@
 #include <arch/irq.h>
 
 #define BELL_FREQUENCY 800
-#define BELL_PERIOD (1193181/BELL_FREQUENCY)
+#define BELL_PERIOD (1193181 / BELL_FREQUENCY)
 
 /*
  * Turn PC speaker on at specified frequency (more precisely, wave period).
  */
 void soundp(unsigned period)
 {
-    clr_irq();
-    outb(inb(SPEAKER_PORT) | 0x03, SPEAKER_PORT);
-    outb(0xB6, TIMER_CMDS_PORT);
-    outb((unsigned char)(period & 0xFF), TIMER2_PORT);
-    outb((unsigned char)(period / 256), TIMER2_PORT);
-    set_irq();
+	clr_irq();
+	outb(inb(SPEAKER_PORT) | 0x03, SPEAKER_PORT);
+	outb(0xB6, TIMER_CMDS_PORT);
+	outb((unsigned char)(period & 0xFF), TIMER2_PORT);
+	outb((unsigned char)(period / 256), TIMER2_PORT);
+	set_irq();
 }
 
 /*
@@ -33,9 +33,9 @@ void soundp(unsigned period)
  */
 void nosound(void)
 {
-    clr_irq();
-    outb(inb(SPEAKER_PORT) & ~0x03, SPEAKER_PORT);
-    set_irq();
+	clr_irq();
+	outb(inb(SPEAKER_PORT) & ~0x03, SPEAKER_PORT);
+	set_irq();
 }
 
 /*
@@ -43,10 +43,10 @@ void nosound(void)
  */
 void bell(void)
 {
-    register volatile unsigned int i = 60000U;
+	register volatile unsigned int i = 60000U;
 
-    soundp(BELL_PERIOD);
-    while (--i)
-	continue;
-    nosound();
+	soundp(BELL_PERIOD);
+	while (--i)
+		continue;
+	nosound();
 }

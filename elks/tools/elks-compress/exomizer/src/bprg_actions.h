@@ -33,11 +33,9 @@ extern "C" {
 
 #include "bprg.h"
 
-void
-bprg_renumber(struct bprg_ctx *ctx);
+void bprg_renumber(struct bprg_ctx *ctx);
 
-void
-bprg_link_patch(struct bprg_ctx *ctx);
+void bprg_link_patch(struct bprg_ctx *ctx);
 
 #ifdef __cplusplus
 }

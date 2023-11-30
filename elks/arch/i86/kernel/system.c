@@ -11,14 +11,13 @@
 #include <arch/segment.h>
 #include <arch/io.h>
 
-
-byte_t sys_caps;		/* system capabilities bits */
-unsigned int heapsize;	/* max size of kernel near heap */
+byte_t sys_caps;       /* system capabilities bits */
+unsigned int heapsize; /* max size of kernel near heap */
 
 void INITPROC setup_arch(seg_t *start, seg_t *end)
 {
 #ifdef CONFIG_HW_COMPAQFAST
-	outb_p(1,0xcf);	/* Switch COMPAQ Deskpro to high speed */
+	outb_p(1, 0xcf); /* Switch COMPAQ Deskpro to high speed */
 #endif
 
 	/*
@@ -41,10 +40,11 @@ void INITPROC setup_arch(seg_t *start, seg_t *end)
 	 */
 
 #ifdef SETUP_HEAPSIZE
-	unsigned int heapsegs = (1 + ~endbss) >> 4;	/* max possible heap in segments*/
-	if ((SETUP_HEAPSIZE >> 4) < heapsegs)		/* allow if less than max*/
+	unsigned int heapsegs = (1 + ~endbss) >>
+				4;	      /* max possible heap in segments*/
+	if ((SETUP_HEAPSIZE >> 4) < heapsegs) /* allow if less than max*/
 		heapsegs = SETUP_HEAPSIZE >> 4;
-	*start = kernel_ds + heapsegs + (((unsigned int) (_endbss+15)) >> 4);
+	*start = kernel_ds + heapsegs + (((unsigned int)(_endbss + 15)) >> 4);
 	heapsize = heapsegs << 4;
 #else
 	*start = kernel_ds + 0x1000;
@@ -61,17 +61,17 @@ void INITPROC setup_arch(seg_t *start, seg_t *end)
 #endif
 
 	/* Now insert local heap at end of kernel data segment */
-	heap_init ();
-	heap_add ((void *)endbss, heapsize);
+	heap_init();
+	heap_add((void *)endbss, heapsize);
 
 	/* Misc */
 	ROOT_DEV = SETUP_ROOT_DEV;
 
 #ifdef SYS_CAPS
-	sys_caps = SYS_CAPS;	/* custom system capabilities */
+	sys_caps = SYS_CAPS; /* custom system capabilities */
 #else
 	byte_t arch_cpu = SETUP_CPU_TYPE;
-	if (arch_cpu > 5)		/* IBM PC/AT capabilities */
+	if (arch_cpu > 5) /* IBM PC/AT capabilities */
 		sys_caps = CAP_ALL;
 	debug("arch %d sys_caps %02x\n", arch_cpu, sys_caps);
 #endif
@@ -84,11 +84,10 @@ void INITPROC setup_arch(seg_t *start, seg_t *end)
 void hard_reset_now(void)
 {
 #ifdef CONFIG_ARCH_IBMPC
-    asm("mov $0x40,%ax\n\t"
-	"mov %ax,%ds\n\t"
-	"movw $0x1234,0x72\n\t"
-	"ljmp $0xFFFF,$0\n\t"
-	);
+	asm("mov $0x40,%ax\n\t"
+	    "mov %ax,%ds\n\t"
+	    "movw $0x1234,0x72\n\t"
+	    "ljmp $0xFFFF,$0\n\t");
 #endif
 }
 
@@ -100,20 +99,19 @@ void hard_reset_now(void)
 void apm_shutdown_now(void)
 {
 #if defined(CONFIG_APM) && defined(CONFIG_ARCH_IBMPC)
-    asm("movw $0x5301,%ax\n\t"
-	"xorw %bx,%bx\n\t"
-	"int $0x15\n\t"
-	"jc apm_error\n\t"
-	"movw $0x5308,%ax\n\t"
-	"movw $1,%bx\n\t"
-	"movw $1,%cx\n\t"
-	"int $0x15\n\t"
-	"jc apm_error\n\t"
-	"movw $0x5307,%ax\n\t"
-	"movw $1,%bx\n\t"
-	"movw $3,%cx\n\t"
-	"int $0x15\n\t"
-	"apm_error:\n\t"
-	);
+	asm("movw $0x5301,%ax\n\t"
+	    "xorw %bx,%bx\n\t"
+	    "int $0x15\n\t"
+	    "jc apm_error\n\t"
+	    "movw $0x5308,%ax\n\t"
+	    "movw $1,%bx\n\t"
+	    "movw $1,%cx\n\t"
+	    "int $0x15\n\t"
+	    "jc apm_error\n\t"
+	    "movw $0x5307,%ax\n\t"
+	    "movw $1,%bx\n\t"
+	    "movw $3,%cx\n\t"
+	    "int $0x15\n\t"
+	    "apm_error:\n\t");
 #endif
 }

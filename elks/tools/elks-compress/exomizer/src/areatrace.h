@@ -34,9 +34,8 @@ extern "C" {
 #include "int.h"
 #include "vec.h"
 
-struct areatrace
-{
-    struct vec areas;
+struct areatrace {
+	struct vec areas;
 };
 
 void areatrace_init(struct areatrace *at);
@@ -46,8 +45,7 @@ void areatrace_free(struct areatrace *at);
 /*
  * Updates the given area trace with the given memory access.
  */
-void areatrace_access(struct areatrace *at /* IN/OUT */,
-                      u16 address /* IN */);
+void areatrace_access(struct areatrace *at /* IN/OUT */, u16 address /* IN */);
 
 /*
  * Merges overlapping areas in the given area trace.
@@ -59,9 +57,8 @@ void areatrace_merge_overlapping(struct areatrace *at /* IN/OUT */);
 /*
  * Gets the largest area from the given area trace.
  */
-void areatrace_get_largest(const struct areatrace *at, /* IN */
-                           int *startp /* OUT */,
-                           int *endp); /* OUT */
+void areatrace_get_largest(const struct areatrace *at,	      /* IN */
+			   int *startp /* OUT */, int *endp); /* OUT */
 
 #ifdef __cplusplus
 }

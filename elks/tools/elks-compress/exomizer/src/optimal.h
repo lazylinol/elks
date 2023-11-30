@@ -34,31 +34,31 @@ extern "C" {
 #include "search.h"
 #include "output.h"
 
-float optimal_encode(const struct match *mp,   /* IN */
-                     struct encode_match_data *emp,     /* IN */
-                     unsigned int prev_offset, /* IN */
-                     struct encode_match_buckets *embp);/* OUT */
+float optimal_encode(const struct match *mp,		 /* IN */
+		     struct encode_match_data *emp,	 /* IN */
+		     unsigned int prev_offset,		 /* IN */
+		     struct encode_match_buckets *embp); /* OUT */
 
-void optimal_init(struct encode_match_data *emp,        /* IN/OUT */
-                  int flags_notrait,    /* IN */
-                  int flags_proto);     /* IN */
+void optimal_init(struct encode_match_data *emp, /* IN/OUT */
+		  int flags_notrait,		 /* IN */
+		  int flags_proto);		 /* IN */
 
-void optimal_free(struct encode_match_data *emd);       /* IN */
+void optimal_free(struct encode_match_data *emd); /* IN */
 
-void optimal_optimize(struct encode_match_data *emd,    /* IN/OUT */
-                      match_enum_next_f *enum_next_f,   /* IN */
-                      void *priv);      /* IN */
+void optimal_optimize(struct encode_match_data *emd,  /* IN/OUT */
+		      match_enum_next_f *enum_next_f, /* IN */
+		      void *priv);		      /* IN */
 
-void optimal_encoding_import(struct encode_match_data *emd,     /* IN/OUT */
-                             const char *encoding);     /* IN */
+void optimal_encoding_import(struct encode_match_data *emd, /* IN/OUT */
+			     const char *encoding);	    /* IN */
 
-void optimal_encoding_export(struct encode_match_data *emd,     /* IN */
-                             struct buf *export);    /* OUT */
+void optimal_encoding_export(struct encode_match_data *emd, /* IN */
+			     struct buf *export);	    /* OUT */
 
-void optimal_dump(int level, struct encode_match_data *emp);       /* IN */
+void optimal_dump(int level, struct encode_match_data *emp); /* IN */
 
-void optimal_out(struct output_ctx *out,        /* IN/OUT */
-                 struct encode_match_data *emd);        /* IN */
+void optimal_out(struct output_ctx *out,	 /* IN/OUT */
+		 struct encode_match_data *emd); /* IN */
 
 #ifdef __cplusplus
 }

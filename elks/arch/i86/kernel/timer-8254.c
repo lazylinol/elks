@@ -30,49 +30,49 @@
  *  The macros use scaled fixed point arithmetic for greater accuracy.
  */
 
-#define TIMER_MODE0 0x30   /* timer 0, binary count, mode 0, lsb/msb */
-#define TIMER_MODE2 0x34   /* timer 0, binary count, mode 2, lsb/msb */
+#define TIMER_MODE0 0x30 /* timer 0, binary count, mode 0, lsb/msb */
+#define TIMER_MODE2 0x34 /* timer 0, binary count, mode 2, lsb/msb */
 
 #ifdef CONFIG_ARCH_IBMPC
-#define TIMER_LO_BYTE (__u8)(((5+(11931818L/(HZ)))/10)%256)
-#define TIMER_HI_BYTE (__u8)(((5+(11931818L/(HZ)))/10)/256)
+#define TIMER_LO_BYTE (__u8)(((5 + (11931818L / (HZ))) / 10) % 256)
+#define TIMER_HI_BYTE (__u8)(((5 + (11931818L / (HZ))) / 10) / 256)
 #endif
 
 #ifdef CONFIG_ARCH_PC98
-#define TIMER_LO_BYTE_5M (__u8)(((5+(24576000L/(HZ)))/10)%256)
-#define TIMER_HI_BYTE_5M (__u8)(((5+(24576000L/(HZ)))/10)/256)
-#define TIMER_LO_BYTE_8M (__u8)(((5+(19968000L/(HZ)))/10)%256)
-#define TIMER_HI_BYTE_8M (__u8)(((5+(19968000L/(HZ)))/10)/256)
+#define TIMER_LO_BYTE_5M (__u8)(((5 + (24576000L / (HZ))) / 10) % 256)
+#define TIMER_HI_BYTE_5M (__u8)(((5 + (24576000L / (HZ))) / 10) / 256)
+#define TIMER_LO_BYTE_8M (__u8)(((5 + (19968000L / (HZ))) / 10) % 256)
+#define TIMER_HI_BYTE_8M (__u8)(((5 + (19968000L / (HZ))) / 10) / 256)
 #endif
 
 void enable_timer_tick(void)
 {
-    /* set the clock frequency */
-    outb (TIMER_MODE2, TIMER_CMDS_PORT);
+	/* set the clock frequency */
+	outb(TIMER_MODE2, TIMER_CMDS_PORT);
 
 #ifdef CONFIG_ARCH_IBMPC
-    outb (TIMER_LO_BYTE, TIMER_DATA_PORT);	/* LSB */
-    outb (TIMER_HI_BYTE, TIMER_DATA_PORT);	/* MSB */
+	outb(TIMER_LO_BYTE, TIMER_DATA_PORT); /* LSB */
+	outb(TIMER_HI_BYTE, TIMER_DATA_PORT); /* MSB */
 #endif
 
 #ifdef CONFIG_ARCH_PC98
-    if (peekb(0x501, 0) & 0x80) {
-	printk("Timer clock frequncy for 8MHz system is set.\n");
-	outb (TIMER_LO_BYTE_8M, TIMER_DATA_PORT);   /* LSB */
-	outb (TIMER_HI_BYTE_8M, TIMER_DATA_PORT);   /* MSB */
-    } else {
-	printk("Timer clock frequncy for 5MHz system is set.\n");
-	outb (TIMER_LO_BYTE_5M, TIMER_DATA_PORT);   /* LSB */
-	outb (TIMER_HI_BYTE_5M, TIMER_DATA_PORT);   /* MSB */
-    }
+	if (peekb(0x501, 0) & 0x80) {
+		printk("Timer clock frequncy for 8MHz system is set.\n");
+		outb(TIMER_LO_BYTE_8M, TIMER_DATA_PORT); /* LSB */
+		outb(TIMER_HI_BYTE_8M, TIMER_DATA_PORT); /* MSB */
+	} else {
+		printk("Timer clock frequncy for 5MHz system is set.\n");
+		outb(TIMER_LO_BYTE_5M, TIMER_DATA_PORT); /* LSB */
+		outb(TIMER_HI_BYTE_5M, TIMER_DATA_PORT); /* MSB */
+	}
 #endif
 }
 
 void disable_timer_tick(void)
 {
-#if NOTNEEDED   /* not needed on IBM PC as IRQ 0 vector untouched */
-    outb (TIMER_MODE0, TIMER_CMDS_PORT);
-    outb (0, TIMER_DATA_PORT);
-    outb (0, TIMER_DATA_PORT);
+#if NOTNEEDED /* not needed on IBM PC as IRQ 0 vector untouched */
+	outb(TIMER_MODE0, TIMER_CMDS_PORT);
+	outb(0, TIMER_DATA_PORT);
+	outb(0, TIMER_DATA_PORT);
 #endif
 }
